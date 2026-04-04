@@ -197,29 +197,6 @@
             </button>
         </div>
     </div>
-
-    <!-- Форма ручного добавления данных -->
-    <div class="add-data-form">
-        <h3>➕ Добавить новый день (ручной ввод)</h3>
-        <div class="form-row">
-            <div class="form-group"><label>Дата</label><input type="text" id="newDate" placeholder="04.04"></div>
-            <div class="form-group"><label>Болва — Псурь (см)</label><input type="number" id="newPsur" placeholder="351"></div>
-            <div class="form-group"><label>Болва — Брянск (см)</label><input type="number" id="newBryansk" placeholder="465"></div>
-            <div class="form-group"><label>Десна — Брянск (см)</label><input type="number" id="newDesna" placeholder="295"></div>
-            <div>
-                <button class="btn-add" onclick="addNewData()">➕ Добавить</button>
-                <button class="btn-reset" onclick="resetToDefault()">↺ Сбросить</button>
-            </div>
-        </div>
-        <div class="threshold-info">
-            📌 <strong>Как обновлять данные:</strong><br>
-            1. Нажмите <strong>"Открыть бюллетень"</strong> — откроется страница с актуальными уровнями рек (обновляется ежедневно в 8:00)<br>
-            2. Найдите в бюллетене строки: <strong>р. Болва-д. Псурь</strong>, <strong>р. Болва-г. Брянск</strong>, <strong>р. Десна-г. Брянск</strong><br>
-            3. Скопируйте уровни в форму выше (графы 2 и 3)<br>
-            4. Нажмите <strong>"Добавить"</strong> — графики и прогноз обновятся
-        </div>
-    </div>
-
     <!-- Два главных графика: Псурь (ранний) и Брянск (финальный) -->
     <div class="grid">
         <div class="card">
