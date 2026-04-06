@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Радица-Крыловка — прогноз паводка (с маркерами и историей)</title>
+    <title>Радица-Крыловка — прогноз паводка (скомпонованные графики)</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -39,13 +39,21 @@
             border-radius: 40px;
             font-weight: bold;
             cursor: pointer;
-            margin-left: 15px;
+            margin: 5px 5px 0 0;
             text-decoration: none;
             display: inline-block;
         }
-        .grid {
+        .btn-lud {
+            background: #ff9800;
+            color: #0a1c2a;
+        }
+        .btn-ges {
+            background: #c62828;
+            color: white;
+        }
+        .grid-2col {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            grid-template-columns: 1fr 1fr;
             gap: 24px;
             margin-top: 24px;
         }
@@ -141,21 +149,31 @@
             border-left: 5px solid #ef6c00;
         }
         .history-table-container { overflow-x: auto; }
-        @media (max-width: 700px) { .header h1 { font-size: 22px; } }
+        @media (max-width: 700px) {
+            .grid-2col { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
 <div class="container">
     <div class="header">
         <h1>🌊 <span>Радица-Крыловка</span></h1>
-        <h2>Прогноз паводка (главный маркер — Болва в Брянске)</h2>
+        <h2>Прогноз паводка (скомпонованные графики)</h2>
         <div>
-            <span class="date-badge" id="currentDateBadge">📅 Данные: 05.04.2026</span>
+            <span class="date-badge" id="currentDateBadge">📅 Данные: 06.04.2026</span>
             <span class="date-badge danger-badge">⚠️ Подтопление при Болве (Брянск) ≥ 530 см</span>
             <span class="date-badge warning-badge">⏱ Течение Псурь → Радица: ~6 ч</span>
-            <button class="btn-source" onclick="window.open('https://ugms-cho.ru/bryansk/gidrologicheskij-byulleten/', '_blank')">
-                📡 Открыть бюллетень
-            </button>
+            <div style="margin-top: 12px;">
+                <button class="btn-source" onclick="window.open('https://ugms-cho.ru/bryansk/gidrologicheskij-byulleten/', '_blank')">
+                    📡 Открыть реки
+                </button>
+                <button class="btn-source btn-lud" onclick="window.open('https://allrivers.info/gauge/nepolad-ludinovo/waterlevel', '_blank')">
+                    🏭 Открыть Людиново
+                </button>
+                <button class="btn-source btn-ges" onclick="window.open('https://67.mchs.gov.ru/deyatelnost/press-centr/operativnaya-informaciya/prognozy', '_blank')">
+                    ⚡ Открыть Десногорск
+                </button>
+            </div>
         </div>
     </div>
 
@@ -169,18 +187,18 @@
             <div id="verdictBlock"></div>
             <div id="warningDetails" style="margin-top: 15px; padding: 12px; background: #fff; border-radius: 12px; font-size: 14px;"></div>
             
-            <!-- Прогноз по Болве (Брянск) на 3 дня -->
             <div style="margin-top: 20px; padding: 15px; background: #e3f2fd; border-radius: 16px;">
                 <h4 style="color: #1e3a5f; margin-bottom: 12px;">📊 Прогноз уровня Болвы (Брянск) на 3 дня:</h4>
                 <ul class="forecast-list" id="mainForecastList"></ul>
                 <div class="lag-info" style="margin-top: 10px;">💡 При сохранении темпа +15 см/сутки.</div>
             </div>
             
-            <!-- Прогноз по Псури (ранний индикатор) -->
             <div style="margin-top: 20px; padding: 15px; background: #e8eaf6; border-radius: 16px;">
-                <h4 style="color: #1e3a5f; margin-bottom: 12px;">📊 Прогноз по Псури (ранний индикатор, течение ~6 ч):</h4>
+                <h4 style="color: #1e3a5f; margin-bottom: 12px;">📊 Прогноз по Псури (ранний индикатор):</h4>
                 <ul class="forecast-list" id="psurForecastList"></ul>
-                <div class="lag-info" style="margin-top: 10px;">⏱ Уровень в Псури → через 6 часов → в Радице</div>
+                <div class="lag-info" style="margin-top: 10px;">
+                    ⏱ Течение Людиново → Псурь: ~24 часа | Течение Псурь → Радица: ~6 часов
+                </div>
             </div>
             
             <div class="recommendations" id="recommendationsBlock"></div>
@@ -196,17 +214,35 @@
         <div class="card-body" id="backwaterBlock"></div>
     </div>
 
-    <!-- Четыре графика с маркерами -->
-    <div class="grid">
+    <!-- 1. ЛЮДИНОВО: уровень (слева) + расчётный сброс (справа) -->
+    <div class="grid-2col">
         <div class="card">
-            <div class="card-header">🔴 Болва — д. Псурь (раннее предупреждение)</div>
+            <div class="card-header">🏭 Людиново — р. Неполадь (уровень, м)</div>
+            <div class="card-body">
+                <canvas id="ludLevelChart" width="400" height="250"></canvas>
+                <div class="lag-info">📊 НПУ: 181,0 м | Текущий: <span id="currentLudLevel">180.33</span> м</div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header">💧 Людиново — расчётный сброс (м³/с)</div>
+            <div class="card-body">
+                <canvas id="ludDischargeChart" width="400" height="250"></canvas>
+                <div class="lag-info">📊 Факт 02.04: 15 м³/с (при 180,10 м) | Текущий расчёт: <span id="calcDischarge">~24</span> м³/с</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. ПСУРЬ (слева) + БОЛВА БРЯНСК (справа) -->
+    <div class="grid-2col">
+        <div class="card">
+            <div class="card-header">🔴 Болва — д. Псурь (раннее предупреждение, см)</div>
             <div class="card-body">
                 <canvas id="psurChart" width="400" height="250"></canvas>
                 <div class="lag-info">📊 Маркеры: 350 см (внимание), 400 см (опасно) | Течение до Радицы: ~6 ч</div>
             </div>
         </div>
         <div class="card">
-            <div class="card-header">🔵 Болва — г. Брянск (ГЛАВНЫЙ МАРКЕР)</div>
+            <div class="card-header">🔵 Болва — г. Брянск (ГЛАВНЫЙ МАРКЕР, см)</div>
             <div class="card-body">
                 <canvas id="bolvaChart" width="400" height="250"></canvas>
                 <div class="lag-info">🔴 Порог подтопления: 530 см | 2022: 716 см | 2013: 759 см</div>
@@ -214,16 +250,35 @@
         </div>
     </div>
 
-    <div class="grid">
+    <!-- 3. СБРОС ДЕСНОГОРСКОЙ ГЭС (слева) + ДЕСНА ГОЛУБЕЯ (справа) -->
+    <div class="grid-2col">
         <div class="card">
-            <div class="card-header">📈 Десна — с. Голубея (прогноз подпора)</div>
+            <div class="card-header">⚡ Десногорская ГЭС — сброс (м³/с)</div>
+            <div class="card-body">
+                <canvas id="gesDischargeChart" width="400" height="250"></canvas>
+                <div class="lag-info">📊 Сброс снижен с 35 до 18,5 м³/с (05.04)</div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header">📈 Десна — с. Голубея (прогноз подпора, см)</div>
             <div class="card-body">
                 <canvas id="golubeyaChart" width="400" height="250"></canvas>
                 <div class="lag-info">📊 Маркер: 300 см (внимание) | 2022: 331 см | 2013: 414 см | Течение до Брянска: ~24 ч</div>
             </div>
         </div>
+    </div>
+
+    <!-- 4. ДЕСНА БРЯНСК (слева) + ДЕСНА ТРУБЧЕВСК (справа) -->
+    <div class="grid-2col">
         <div class="card">
-            <div class="card-header">📉 Десна — г. Трубчевск (индикатор спада)</div>
+            <div class="card-header">📉 Десна — г. Брянск (фактический уровень, см)</div>
+            <div class="card-body">
+                <canvas id="desnaBryanskChart" width="400" height="250"></canvas>
+                <div class="lag-info">📊 Маркеры: 340 см (начало подтопления), 418 см (опасный уровень)</div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header">📉 Десна — г. Трубчевск (индикатор спада, см)</div>
             <div class="card-body">
                 <canvas id="trubchevskChart" width="400" height="250"></canvas>
                 <div class="lag-info">📊 2022: 373 см | 2013: 418 см | Течение Брянск → Трубчевск (спад): ~1-2 сут</div>
@@ -231,12 +286,22 @@
         </div>
     </div>
 
-    <!-- Итоговая таблица -->
-    <div class="card">
+    <!-- Итоговая таблица (с добавленной Десной Брянск) -->
+    <div class="card" style="margin-top: 24px;">
         <div class="card-header">📊 Итоговая таблица уровней (со стрелками)</div>
         <div class="card-body history-table-container">
             <table class="data-table" id="allDataTable">
-                <thead><tr><th>Дата</th><th>Псурь (см)</th><th>Болва-Брянск (см)</th><th>Десна-Голубея (см)</th><th>Десна-Трубчевск (см)</th><th>Статус Радицы</th></tr></thead>
+                <thead>
+                    <tr>
+                        <th>Дата</th>
+                        <th>Псурь (см)</th>
+                        <th>Болва-Брянск (см)</th>
+                        <th>Десна-Голубея (см)</th>
+                        <th>Десна-Брянск (см)</th>
+                        <th>Десна-Трубчевск (см)</th>
+                        <th>Статус Радицы</th>
+                    </tr>
+                </thead>
                 <tbody></tbody>
             </table>
         </div>
@@ -247,11 +312,11 @@
         <div class="card-header">📜 Исторические максимумы (для сравнения)</div>
         <div class="card-body history-table-container">
             <table class="data-table">
-                <thead><tr><th>Год</th><th>Псурь</th><th>Болва (Брянск)</th><th>Десна (Голубея)</th><th>Десна (Трубчевск)</th><th>Радица</th></tr></thead>
+                <thead><tr><th>Год</th><th>Псурь</th><th>Болва (Брянск)</th><th>Десна (Голубея)</th><th>Десна (Брянск)</th><th>Десна (Трубчевск)</th><th>Радица</th></tr></thead>
                 <tbody>
-                    <tr><td class="danger-cell">2013</td><td class="danger-cell">418</td><td class="danger-cell">759</td><td class="danger-cell">414</td><td class="danger-cell">418</td><td class="danger-cell">🔴 Рекордное затопление</td></tr>
-                    <tr><td class="warning-cell">2022</td><td class="warning-cell">~360</td><td class="danger-cell">716</td><td class="warning-cell">331</td><td class="warning-cell">373</td><td class="danger-cell">🔴 Сильное затопление</td></tr>
-                    <tr id="currentHistoryRow"><td>2026</td><td id="currentPsur">319</td><td id="currentBolva">496</td><td id="currentGolubeya">352</td><td id="currentTrubchevsk">305</td><td id="currentStatus">🟡 Внимание</td></tr>
+                    <tr><td class="danger-cell">2013</td><td class="danger-cell">418</td><td class="danger-cell">759</td><td class="danger-cell">414</td><td class="danger-cell">535</td><td class="danger-cell">418</td><td class="danger-cell">🔴 Рекордное затопление</td></tr>
+                    <tr><td class="warning-cell">2022</td><td class="warning-cell">~360</td><td class="danger-cell">716</td><td class="warning-cell">331</td><td class="danger-cell">529</td><td class="warning-cell">373</td><td class="danger-cell">🔴 Сильное затопление</td></tr>
+                    <tr id="currentHistoryRow"><td>2026</td><td id="currentPsur">319</td><td id="currentBolva">496</td><td id="currentGolubeya">352</td><td id="currentDesnaBryansk">315</td><td id="currentTrubchevsk">305</td><td id="currentStatus">🟡 Внимание</td></tr>
                 </tbody>
             </table>
         </div>
@@ -259,113 +324,176 @@
 
     <div class="footer">
         <p>📌 <strong>Главный маркер:</strong> Болва в Брянске (496 см, рост +15 см/сутки). При сохранении темпа через 2-3 дня — порог 530 см и подтопление.</p>
-        <p>📌 Псурь падает (319 см), но это не спасает из-за огромного подпора Десны (Голубея 352 см) и отсутствия спада в Трубчевске.</p>
+        <p>📌 <strong>Людиново:</strong> уровень воды в метрах. Рост уровня Неполади → через 24 часа рост Псури.</p>
+        <p>📌 <strong>Десна (Брянск):</strong> 340 см — начало подтопления, 418 см — опасный уровень.</p>
+        <p>📌 <strong>Как обновить данные:</strong> отредактируйте массивы в коде (в самом начале script).</p>
     </div>
 </div>
 
 <script>
-    // ========= ДАННЫЕ =========
-    let dates = ["26.03", "27.03", "28.03", "29.03", "30.03", "31.03", "01.04", "02.04", "03.04", "04.04", "05.04"];
-    let psurLevels = [320, 335, 345, 352, 358, 362, 360, 355, 351, 337, 319];
-    let bryanskLevels = [410, 435, 448, 455, 460, 462, 464, 465, 465, 481, 496];
-    let golubeyaLevels = [310, 325, 335, 342, 346, 348, 349, 350, 350, 352, 352];
-    let trubchevskLevels = [240, 260, 275, 288, 295, 298, 300, 300, 303, 305, 305];
+    // ========= ДАННЫЕ ПО ОСНОВНЫМ РЕКАМ =========
+    let dates = ["26.03", "27.03", "28.03", "29.03", "30.03", "31.03", "01.04", "02.04", "03.04", "04.04", "05.04", "06.04"];
+    let psurLevels = [320, 335, 345, 352, 358, 362, 360, 355, 351, 337, 319, 307];
+    let bryanskLevels = [410, 435, 448, 455, 460, 462, 464, 465, 465, 481, 496, 512];
+    let golubeyaLevels = [310, 325, 335, 342, 346, 348, 349, 350, 350, 352, 352, 353];
+    let desnaBryanskLevels = [180, 220, 250, 270, 282, 287, 290, 294, 295, 304, 315, 326];
+    let trubchevskLevels = [240, 260, 275, 288, 295, 298, 300, 300, 303, 305, 305, 306];
     
-    const FLOOD_THRESHOLD = 530;
-    const PSUR_WARNING = 350;
-    const PSUR_DANGER = 400;
-    const GOLUBEYA_WARNING = 300;
-    const RATE_PER_DAY = 15;
+    // ========= ДАННЫЕ ПО СБРОСУ ДЕСНОГОРСКОЙ ГЭС =========
+    let gesDates = ["27.03", "28.03", "29.03", "30.03", "31.03", "01.04", "02.04", "03.04", "04.04", "05.04"];
+    let gesDischarge = [21.6, 35.0, 35.0, 35.0, 35.0, 35.0, 35.0, 35.0, 18.8, 18.5];
+    
+    // ========= ДАННЫЕ ПО ЛЮДИНОВО =========
+    let ludData = [
+        { date: "23.03", level: 179.77 },
+        { date: "01.04", level: 179.90 },
+        { date: "02.04", level: 180.10 },
+        { date: "06.04", level: 180.33 }
+    ];
+    
+    const NPU_LUD = 181.0;
+    const DESNA_FLOOD_START = 340;
+    const DESNA_DANGER = 418;
+    
+    function estimateDischarge(level) {
+        if (level <= 179.90) return 0;
+        if (level <= 180.10) return Math.round((level - 179.90) / 0.20 * 15);
+        if (level <= 181.00) return Math.round(15 + (level - 180.10) / 0.90 * 85);
+        return Math.round(100 + (level - 181.00) * 50);
+    }
+    
+    let ludDischarge = ludData.map(d => estimateDischarge(d.level));
+    let ludLevels = ludData.map(d => d.level);
+    let ludLabels = ludData.map(d => d.date);
     
     let charts = {};
-
+    
+    // ========= ОТРИСОВКА ВСЕХ ГРАФИКОВ =========
+    function renderLudLevelChart() {
+        const ctx = document.getElementById('ludLevelChart').getContext('2d');
+        if (charts.ludLevel) charts.ludLevel.destroy();
+        charts.ludLevel = new Chart(ctx, {
+            type: 'line',
+            data: { labels: ludLabels, datasets: [
+                { label: 'Уровень Неполади (м)', data: ludLevels, borderColor: '#1e88e5', backgroundColor: 'rgba(30,136,229,0.1)', borderWidth: 3, fill: true, tension: 0.2, pointRadius: 5 },
+                { label: 'НПУ (181,0 м)', data: Array(ludLabels.length).fill(NPU_LUD), borderColor: '#c62828', borderWidth: 2, borderDash: [8,6], fill: false, pointRadius: 0 }
+            ] },
+            options: { responsive: true, maintainAspectRatio: true, scales: { y: { title: { display: true, text: 'Уровень (м)' }, min: 179.0, max: 182.0 } } }
+        });
+    }
+    
+    function renderLudDischargeChart() {
+        const ctx = document.getElementById('ludDischargeChart').getContext('2d');
+        if (charts.ludDischarge) charts.ludDischarge.destroy();
+        charts.ludDischarge = new Chart(ctx, {
+            type: 'line',
+            data: { labels: ludLabels, datasets: [{ label: 'Расчётный сброс (м³/с)', data: ludDischarge, borderColor: '#ef6c00', backgroundColor: 'rgba(239,108,0,0.1)', borderWidth: 3, fill: true, tension: 0.2, pointRadius: 5 }] },
+            options: { responsive: true, maintainAspectRatio: true, scales: { y: { title: { display: true, text: 'м³/с' }, min: 0, max: 50 } } }
+        });
+    }
+    
+    function renderGesDischargeChart() {
+        const ctx = document.getElementById('gesDischargeChart').getContext('2d');
+        if (charts.gesDischarge) charts.gesDischarge.destroy();
+        charts.gesDischarge = new Chart(ctx, {
+            type: 'line',
+            data: { labels: gesDates, datasets: [{ label: 'Сброс Десногорской ГЭС (м³/с)', data: gesDischarge, borderColor: '#1e88e5', backgroundColor: 'rgba(30,136,229,0.1)', borderWidth: 3, fill: true, tension: 0.2, pointRadius: 5 }] },
+            options: { responsive: true, maintainAspectRatio: true, scales: { y: { title: { display: true, text: 'м³/с' }, min: 0, max: 50 } } }
+        });
+    }
+    
+    function renderPsurChart() {
+        const ctx = document.getElementById('psurChart').getContext('2d');
+        if (charts.psur) charts.psur.destroy();
+        charts.psur = new Chart(ctx, {
+            type: 'line', data: { labels: dates, datasets: [
+                { label: 'Псурь (см)', data: psurLevels, borderColor: '#e53935', borderWidth: 3, fill: true, tension: 0.3 },
+                { label: 'Внимание (350 см)', data: Array(dates.length).fill(350), borderColor: '#ff9800', borderDash: [5,5], fill: false },
+                { label: 'Опасно (400 см)', data: Array(dates.length).fill(400), borderColor: '#c62828', borderDash: [8,6], fill: false }
+            ] },
+            options: { responsive: true, scales: { y: { title: { display: true, text: 'см' }, min: 300, max: 410 } } }
+        });
+    }
+    
+    function renderBolvaChart() {
+        const ctx = document.getElementById('bolvaChart').getContext('2d');
+        if (charts.bolva) charts.bolva.destroy();
+        charts.bolva = new Chart(ctx, {
+            type: 'line', data: { labels: dates, datasets: [
+                { label: 'Болва — Брянск (см)', data: bryanskLevels, borderColor: '#1e88e5', borderWidth: 3, fill: true, tension: 0.3 },
+                { label: 'Порог подтопления (530 см)', data: Array(dates.length).fill(530), borderColor: '#c62828', borderDash: [8,6], fill: false },
+                { label: '2022 год (716 см)', data: Array(dates.length).fill(716), borderColor: '#ff9800', borderDash: [5,5], fill: false },
+                { label: '2013 год (759 см)', data: Array(dates.length).fill(759), borderColor: '#9c27b0', borderDash: [5,5], fill: false }
+            ] },
+            options: { responsive: true, scales: { y: { title: { display: true, text: 'см' }, min: 400, max: 780 } } }
+        });
+    }
+    
+    function renderGolubeyaChart() {
+        const ctx = document.getElementById('golubeyaChart').getContext('2d');
+        if (charts.golubeya) charts.golubeya.destroy();
+        charts.golubeya = new Chart(ctx, {
+            type: 'line', data: { labels: dates, datasets: [
+                { label: 'Десна — Голубея (см)', data: golubeyaLevels, borderColor: '#43a047', borderWidth: 2, fill: true, tension: 0.3 },
+                { label: 'Внимание (300 см)', data: Array(dates.length).fill(300), borderColor: '#ff9800', borderDash: [5,5], fill: false },
+                { label: '2022 год (331 см)', data: Array(dates.length).fill(331), borderColor: '#ff9800', borderDash: [5,5], fill: false },
+                { label: '2013 год (414 см)', data: Array(dates.length).fill(414), borderColor: '#9c27b0', borderDash: [5,5], fill: false }
+            ] },
+            options: { responsive: true, scales: { y: { title: { display: true, text: 'см' }, min: 280, max: 450 } } }
+        });
+    }
+    
+    function renderDesnaBryanskChart() {
+        const ctx = document.getElementById('desnaBryanskChart').getContext('2d');
+        if (charts.desnaBryansk) charts.desnaBryansk.destroy();
+        charts.desnaBryansk = new Chart(ctx, {
+            type: 'line', data: { labels: dates, datasets: [
+                { label: 'Десна — Брянск (см)', data: desnaBryanskLevels, borderColor: '#43a047', borderWidth: 2, fill: true, tension: 0.3 },
+                { label: 'Начало подтопления (340 см)', data: Array(dates.length).fill(DESNA_FLOOD_START), borderColor: '#ff9800', borderDash: [5,5], fill: false },
+                { label: 'Опасный уровень (418 см)', data: Array(dates.length).fill(DESNA_DANGER), borderColor: '#c62828', borderDash: [8,6], fill: false }
+            ] },
+            options: { responsive: true, scales: { y: { title: { display: true, text: 'см' }, min: 150, max: 450 } } }
+        });
+    }
+    
+    function renderTrubchevskChart() {
+        const ctx = document.getElementById('trubchevskChart').getContext('2d');
+        if (charts.trubchevsk) charts.trubchevsk.destroy();
+        charts.trubchevsk = new Chart(ctx, {
+            type: 'line', data: { labels: dates, datasets: [
+                { label: 'Десна — Трубчевск (см)', data: trubchevskLevels, borderColor: '#9c27b0', borderWidth: 2, fill: true, tension: 0.3 },
+                { label: '2022 год (373 см)', data: Array(dates.length).fill(373), borderColor: '#ff9800', borderDash: [5,5], fill: false },
+                { label: '2013 год (418 см)', data: Array(dates.length).fill(418), borderColor: '#c62828', borderDash: [5,5], fill: false }
+            ] },
+            options: { responsive: true, scales: { y: { title: { display: true, text: 'см' }, min: 220, max: 450 } } }
+        });
+    }
+    
+    // ========= ОБЩИЕ ФУНКЦИИ =========
+    function updateLudInfo() {
+        const current = ludData[ludData.length-1].level;
+        const discharge = estimateDischarge(current);
+        document.getElementById('currentLudLevel').innerText = current.toFixed(2);
+        document.getElementById('calcDischarge').innerHTML = `~${discharge}`;
+    }
+    
     function getTrendInfo(levels, idx) {
         if (idx === 0) return { trend: "stable", arrow: "→", class: "trend-stable" };
         if (levels[idx] > levels[idx-1]) return { trend: "rise", arrow: "↑", class: "trend-up" };
         if (levels[idx] < levels[idx-1]) return { trend: "fall", arrow: "↓", class: "trend-down" };
         return { trend: "stable", arrow: "→", class: "trend-stable" };
     }
-
-    function getVerdict(bryansk, trendBryansk) {
-        if (bryansk >= FLOOD_THRESHOLD) {
-            return { type: "critical", text: `🔴🔴🔴 КРИТИЧЕСКИ! Болва в Брянске достигла ${bryansk} см (≥530 см). ПОДТОПЛЕНИЕ ДВОРОВ! 🔴🔴🔴`, details: `Немедленно следите за сводками МЧС.` };
-        }
-        if (bryansk >= 500 && trendBryansk === 'rise') {
-            let daysToFlood = Math.ceil((FLOOD_THRESHOLD - bryansk) / RATE_PER_DAY);
-            return { type: "danger", text: `🔴 ОПАСНОСТЬ ПРИБЛИЖАЕТСЯ! Болва в Брянске: ${bryansk} см, РАСТЁТ (+${RATE_PER_DAY} см/сутки)`, details: `При сохранении темпа через ${daysToFlood} дня уровень достигнет ${FLOOD_THRESHOLD} см. Начнётся подтопление дворов. Готовьтесь!` };
-        }
-        if (bryansk >= 500) {
-            return { type: "warning", text: `⚠️ ВЫСОКИЙ УРОВЕНЬ! Болва в Брянске: ${bryansk} см`, details: `Уровень высокий, но стабилен. Следите за динамикой.` };
-        }
-        if (trendBryansk === 'rise' && bryansk >= 470) {
-            return { type: "warning", text: `⚠️ ВНИМАНИЕ! Болва в Брянске РАСТЁТ (${bryansk} см)`, details: `Уровень приближается к 500 см. Если рост сохранится, через несколько дней возможен порог подтопления.` };
-        }
-        return { type: "safe", text: `✅ Безопасно. Болва в Брянске: ${bryansk} см`, details: `Уровень в норме. Подтопления не ожидается.` };
-    }
-
+    
+    function predictBackwater(golubeya) { return Math.round(0.0723 * golubeya + 505.1); }
+    
     function updateBackwaterBlock() {
         const currentGolubeya = golubeyaLevels[golubeyaLevels.length-1];
-        const expectedBryansk = Math.round(0.0723 * currentGolubeya + 505.1);
+        const expectedBryansk = predictBackwater(currentGolubeya);
         let warningText = "", colorClass = "", recommendation = "";
         if (expectedBryansk >= 530) { colorClass = "danger-cell"; warningText = "🔴 СИЛЬНЫЙ ПОДПОР"; recommendation = "Вода из Радицы будет уходить крайне медленно."; }
         else if (expectedBryansk >= 400) { colorClass = "warning-cell"; warningText = "🟡 УМЕРЕННЫЙ ПОДПОР"; recommendation = "Подпор замедлит спад воды в Радице."; }
         else { colorClass = "normal-cell"; warningText = "🟢 ПОДПОРА НЕТ"; recommendation = "Вода из Радицы будет уходить свободно."; }
-        document.getElementById('backwaterBlock').innerHTML = `
-            <div style="font-size:16px; margin-bottom:10px;">
-                📍 <strong>Десна — Голубея:</strong> ${currentGolubeya} см<br>
-                📍 <strong>Прогноз Десны в Брянске через ~24 ч:</strong> ${expectedBryansk} см
-            </div>
-            <div class="${colorClass}" style="padding:12px; border-radius:12px; text-align:center; font-weight:bold;">${warningText}</div>
-            <div class="lag-info" style="margin-top:12px;">💡 ${recommendation}</div>
-        `;
-    }
-    
-    function renderCharts() {
-        const ctxPsur = document.getElementById('psurChart').getContext('2d');
-        if (charts.psur) charts.psur.destroy();
-        charts.psur = new Chart(ctxPsur, {
-            type: 'line', data: { labels: dates, datasets: [
-                { label: 'Псурь', data: psurLevels, borderColor: '#e53935', borderWidth: 3, fill: true, tension: 0.3 },
-                { label: 'Внимание (350 см)', data: Array(dates.length).fill(PSUR_WARNING), borderColor: '#ff9800', borderDash: [5,5], fill: false },
-                { label: 'Опасно (400 см)', data: Array(dates.length).fill(PSUR_DANGER), borderColor: '#c62828', borderDash: [8,6], fill: false }
-            ] },
-            options: { responsive: true, scales: { y: { min: 300, max: 410, title: { display: true, text: 'см' } } } }
-        });
-        
-        const ctxBolva = document.getElementById('bolvaChart').getContext('2d');
-        if (charts.bolva) charts.bolva.destroy();
-        charts.bolva = new Chart(ctxBolva, {
-            type: 'line', data: { labels: dates, datasets: [
-                { label: 'Болва — Брянск', data: bryanskLevels, borderColor: '#1e88e5', borderWidth: 3, fill: true, tension: 0.3 },
-                { label: 'Порог подтопления (530 см)', data: Array(dates.length).fill(FLOOD_THRESHOLD), borderColor: '#c62828', borderDash: [8,6], fill: false },
-                { label: '2022 год (716 см)', data: Array(dates.length).fill(716), borderColor: '#ff9800', borderDash: [5,5], fill: false },
-                { label: '2013 год (759 см)', data: Array(dates.length).fill(759), borderColor: '#9c27b0', borderDash: [5,5], fill: false }
-            ] },
-            options: { responsive: true, scales: { y: { min: 400, max: 780, title: { display: true, text: 'см' } } } }
-        });
-        
-        const ctxGolubeya = document.getElementById('golubeyaChart').getContext('2d');
-        if (charts.golubeya) charts.golubeya.destroy();
-        charts.golubeya = new Chart(ctxGolubeya, {
-            type: 'line', data: { labels: dates, datasets: [
-                { label: 'Десна — Голубея', data: golubeyaLevels, borderColor: '#43a047', borderWidth: 2, fill: true, tension: 0.3 },
-                { label: 'Внимание (300 см)', data: Array(dates.length).fill(GOLUBEYA_WARNING), borderColor: '#ff9800', borderDash: [5,5], fill: false },
-                { label: '2022 год (331 см)', data: Array(dates.length).fill(331), borderColor: '#ff9800', borderDash: [5,5], fill: false },
-                { label: '2013 год (414 см)', data: Array(dates.length).fill(414), borderColor: '#9c27b0', borderDash: [5,5], fill: false }
-            ] },
-            options: { responsive: true, scales: { y: { min: 280, max: 450, title: { display: true, text: 'см' } } } }
-        });
-        
-        const ctxTrub = document.getElementById('trubchevskChart').getContext('2d');
-        if (charts.trub) charts.trub.destroy();
-        charts.trub = new Chart(ctxTrub, {
-            type: 'line', data: { labels: dates, datasets: [
-                { label: 'Десна — Трубчевск', data: trubchevskLevels, borderColor: '#9c27b0', borderWidth: 2, fill: true, tension: 0.3 },
-                { label: '2022 год (373 см)', data: Array(dates.length).fill(373), borderColor: '#ff9800', borderDash: [5,5], fill: false },
-                { label: '2013 год (418 см)', data: Array(dates.length).fill(418), borderColor: '#c62828', borderDash: [5,5], fill: false }
-            ] },
-            options: { responsive: true, scales: { y: { min: 220, max: 450, title: { display: true, text: 'см' } } } }
-        });
+        document.getElementById('backwaterBlock').innerHTML = `<div style="font-size:16px; margin-bottom:10px;">📍 <strong>Десна — Голубея:</strong> ${currentGolubeya} см<br>📍 <strong>Прогноз Десны в Брянске через ~24 ч:</strong> ${expectedBryansk} см</div><div class="${colorClass}" style="padding:12px; border-radius:12px; text-align:center; font-weight:bold;">${warningText}</div><div class="lag-info" style="margin-top:12px;">💡 ${recommendation}</div>`;
     }
     
     function fillDataTable() {
@@ -375,11 +503,20 @@
             const psurInfo = getTrendInfo(psurLevels, i);
             const bryanskInfo = getTrendInfo(bryanskLevels, i);
             const golubeyaInfo = getTrendInfo(golubeyaLevels, i);
+            const desnaInfo = getTrendInfo(desnaBryanskLevels, i);
             const trubInfo = getTrendInfo(trubchevskLevels, i);
             const bryansk = bryanskLevels[i];
-            let status = bryansk >= FLOOD_THRESHOLD ? '🔴 Подтопление' : (bryansk >= 500 ? '🟡 Внимание' : '🟢 Безопасно');
-            let statusClass = bryansk >= FLOOD_THRESHOLD ? 'danger-cell' : (bryansk >= 500 ? 'warning-cell' : 'normal-cell');
-            tbody.innerHTML += `<tr><td><b>${dates[i]}</b></td><td class="${psurInfo.class}">${psurLevels[i]} ${psurInfo.arrow}</td><td class="${bryanskInfo.class}">${bryanskLevels[i]} ${bryanskInfo.arrow}</td><td class="${golubeyaInfo.class}">${golubeyaLevels[i]} ${golubeyaInfo.arrow}</td><td class="${trubInfo.class}">${trubchevskLevels[i]} ${trubInfo.arrow}</td><td class="${statusClass}">${status}</td></tr>`;
+            let status = bryansk >= 530 ? '🔴 Подтопление' : (bryansk >= 500 ? '🟡 Внимание' : '🟢 Безопасно');
+            let statusClass = bryansk >= 530 ? 'danger-cell' : (bryansk >= 500 ? 'warning-cell' : 'normal-cell');
+            tbody.innerHTML += `<tr>
+                <td><b>${dates[i]}</b></td>
+                <td class="${psurInfo.class}">${psurLevels[i]} ${psurInfo.arrow}</td>
+                <td class="${bryanskInfo.class}">${bryanskLevels[i]} ${bryanskInfo.arrow}</td>
+                <td class="${golubeyaInfo.class}">${golubeyaLevels[i]} ${golubeyaInfo.arrow}</td>
+                <td class="${desnaInfo.class}">${desnaBryanskLevels[i]} ${desnaInfo.arrow}</td>
+                <td class="${trubInfo.class}">${trubchevskLevels[i]} ${trubInfo.arrow}</td>
+                <td class="${statusClass}">${status}</td>
+            </tr>`;
         }
     }
     
@@ -388,55 +525,81 @@
         const currentPsur = psurLevels[psurLevels.length-1];
         const trendBryansk = getTrendInfo(bryanskLevels, bryanskLevels.length-1).trend;
         const trendPsur = getTrendInfo(psurLevels, psurLevels.length-1).trend;
-        const verdict = getVerdict(currentBryansk, trendBryansk);
         
-        let verdictClass = verdict.type === 'critical' ? 'verdict-critical' : (verdict.type === 'danger' ? 'verdict-danger' : (verdict.type === 'warning' ? 'verdict-warning' : 'verdict-safe'));
-        document.getElementById('verdictBlock').innerHTML = `<div class="verdict ${verdictClass}">${verdict.text}</div>`;
-        document.getElementById('warningDetails').innerHTML = `<div style="background:#fff3e0; padding:12px; border-radius:12px;">${verdict.details}</div>`;
+        let verdictText = "", verdictClass = "", details = "";
+        if (currentBryansk >= 530) {
+            verdictClass = "verdict-critical";
+            verdictText = `🔴🔴🔴 КРИТИЧЕСКИ! Болва в Брянске достигла ${currentBryansk} см (≥530 см). ПОДТОПЛЕНИЕ ДВОРОВ! 🔴🔴🔴`;
+            details = "Немедленно следите за сводками МЧС.";
+        } else if (currentBryansk >= 500 && trendBryansk === 'rise') {
+            let daysToFlood = Math.ceil((530 - currentBryansk) / 15);
+            verdictClass = "verdict-danger";
+            verdictText = `🔴 ОПАСНОСТЬ ПРИБЛИЖАЕТСЯ! Болва в Брянске: ${currentBryansk} см, РАСТЁТ (+15 см/сутки)`;
+            details = `При сохранении темпа через ${daysToFlood} дня уровень достигнет 530 см. Начнётся подтопление дворов. Готовьтесь!`;
+        } else if (currentBryansk >= 500) {
+            verdictClass = "verdict-warning";
+            verdictText = `⚠️ ВЫСОКИЙ УРОВЕНЬ! Болва в Брянске: ${currentBryansk} см`;
+            details = "Уровень высокий, но стабилен. Следите за динамикой.";
+        } else {
+            verdictClass = "verdict-safe";
+            verdictText = `✅ Безопасно. Болва в Брянске: ${currentBryansk} см`;
+            details = "Уровень в норме. Подтопления не ожидается.";
+        }
         
-        // Прогноз по Болве (Брянск)
+        document.getElementById('verdictBlock').innerHTML = `<div class="verdict ${verdictClass}">${verdictText}</div>`;
+        document.getElementById('warningDetails').innerHTML = `<div style="background:#fff3e0; padding:12px; border-radius:12px;">${details}</div>`;
+        
         const mainForecastList = document.getElementById('mainForecastList');
-        const days = ['06.04 (пн)', '07.04 (вт)', '08.04 (ср)'];
+        const days = ['07.04 (вт)', '08.04 (ср)', '09.04 (чт)'];
         mainForecastList.innerHTML = '';
         let forecastLevel = currentBryansk;
         for (let i = 0; i < days.length; i++) {
-            if (trendBryansk === 'rise') forecastLevel += RATE_PER_DAY;
-            else if (trendBryansk === 'fall') forecastLevel -= RATE_PER_DAY;
-            let color = forecastLevel >= FLOOD_THRESHOLD ? '#c62828' : (forecastLevel >= 500 ? '#ef6c00' : '#2e7d32');
+            if (trendBryansk === 'rise') forecastLevel += 15;
+            else if (trendBryansk === 'fall') forecastLevel -= 15;
+            let color = forecastLevel >= 530 ? '#c62828' : (forecastLevel >= 500 ? '#ef6c00' : '#2e7d32');
             let symbol = trendBryansk === 'rise' ? '▲' : (trendBryansk === 'fall' ? '▼' : '➡');
             mainForecastList.innerHTML += `<li class="forecast-item"><span class="forecast-date">${days[i]}</span><span style="color:${color}; font-weight:bold">${symbol} ${Math.round(forecastLevel)} см</span></li>`;
         }
         
-        // Прогноз по Псури
         const psurForecastList = document.getElementById('psurForecastList');
         psurForecastList.innerHTML = '';
         let psurForecast = currentPsur;
         for (let i = 0; i < days.length; i++) {
             if (trendPsur === 'fall') psurForecast -= 4;
             else if (trendPsur === 'rise') psurForecast += 2;
-            let color = psurForecast >= PSUR_DANGER ? '#c62828' : (psurForecast >= PSUR_WARNING ? '#ef6c00' : '#2e7d32');
+            let color = psurForecast >= 400 ? '#c62828' : (psurForecast >= 350 ? '#ef6c00' : '#2e7d32');
             let symbol = trendPsur === 'fall' ? '▼' : (trendPsur === 'rise' ? '▲' : '➡');
             psurForecastList.innerHTML += `<li class="forecast-item"><span class="forecast-date">${days[i]}</span><span style="color:${color}; font-weight:bold">${symbol} ${Math.round(psurForecast)} см</span></li>`;
         }
         
+        const recBlock = document.getElementById('recommendationsBlock');
+        if (currentBryansk >= 530) recBlock.innerHTML = '<ul><li>🚨 ЭКСТРЕННАЯ СИТУАЦИЯ! Следите за МЧС.</li><li>🏠 Будьте готовы к эвакуации.</li></ul>';
+        else if (currentBryansk >= 500 && trendBryansk === 'rise') recBlock.innerHTML = '<ul><li>⚠️ ПОДГОТОВЬТЕСЬ! Через 2-3 дня возможен порог подтопления.</li><li>📦 Соберите документы и ценные вещи.</li><li>📊 Проверяйте прогноз каждые 12 часов.</li></ul>';
+        else recBlock.innerHTML = '<ul><li>✅ Ситуация стабильная.</li><li>📊 Проверяйте прогноз ежедневно.</li></ul>';
+        
         document.getElementById('currentPsur').innerText = currentPsur;
         document.getElementById('currentBolva').innerText = currentBryansk;
         document.getElementById('currentGolubeya').innerText = golubeyaLevels[golubeyaLevels.length-1];
+        document.getElementById('currentDesnaBryansk').innerText = desnaBryanskLevels[desnaBryanskLevels.length-1];
         document.getElementById('currentTrubchevsk').innerText = trubchevskLevels[trubchevskLevels.length-1];
-        
-        const currentStatusCell = document.getElementById('currentStatus');
-        if (currentBryansk >= FLOOD_THRESHOLD) { currentStatusCell.innerHTML = '🔴 Подтопление'; currentStatusCell.className = 'danger-cell'; }
-        else if (currentBryansk >= 500) { currentStatusCell.innerHTML = '🟡 Внимание'; currentStatusCell.className = 'warning-cell'; }
-        else { currentStatusCell.innerHTML = '🟢 Безопасно'; currentStatusCell.className = 'normal-cell'; }
-        
-        const recBlock = document.getElementById('recommendationsBlock');
-        if (currentBryansk >= FLOOD_THRESHOLD) recBlock.innerHTML = '<ul><li>🚨 ЭКСТРЕННАЯ СИТУАЦИЯ! Следите за МЧС.</li><li>🏠 Будьте готовы к эвакуации.</li></ul>';
-        else if (currentBryansk >= 500 && trendBryansk === 'rise') recBlock.innerHTML = '<ul><li>⚠️ ПОДГОТОВЬТЕСЬ! Через 2-3 дня возможен порог подтопления.</li><li>📦 Соберите документы и ценные вещи.</li><li>📊 Проверяйте прогноз каждые 12 часов.</li></ul>';
-        else if (currentBryansk >= 500) recBlock.innerHTML = '<ul><li>🟡 Уровень высокий, но стабилен.</li><li>📊 Следите за динамикой.</li></ul>';
-        else recBlock.innerHTML = '<ul><li>✅ Ситуация стабильная.</li><li>📊 Проверяйте прогноз ежедневно.</li></ul>';
+        document.getElementById('currentDateBadge').innerHTML = `📅 Данные: ${dates[dates.length-1]}`;
     }
     
-    function refreshAll() { renderCharts(); fillDataTable(); updateVerdictAndHistory(); updateBackwaterBlock(); }
+    function refreshAll() {
+        renderLudLevelChart();
+        renderLudDischargeChart();
+        renderGesDischargeChart();
+        renderPsurChart();
+        renderBolvaChart();
+        renderGolubeyaChart();
+        renderDesnaBryanskChart();
+        renderTrubchevskChart();
+        fillDataTable();
+        updateVerdictAndHistory();
+        updateBackwaterBlock();
+        updateLudInfo();
+    }
+    
     refreshAll();
 </script>
 </body>
