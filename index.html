@@ -415,7 +415,7 @@
         charts.ludDischarge = new Chart(ctx, {
             type: 'line',
             data: { labels: ludLabels, datasets: [{ label: 'Расчётный сброс (м³/с)', data: ludDischarge, borderColor: '#ef6c00', backgroundColor: 'rgba(239,108,0,0.1)', borderWidth: 3, fill: true, tension: 0.2, pointRadius: 5 }] },
-            options: { responsive: true, maintainAspectRatio: true, scales: { y: { title: { display: true, text: 'м³/с' }, min: 0, max: 55 } } }
+            options: { responsive: true, maintainAspectRatio: true, scales: { y: { title: { display: true, text: 'м³/с' }, min: -5, max: 55 } } }
         });
     }
     
