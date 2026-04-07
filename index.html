@@ -405,7 +405,7 @@
                 { label: 'Уровень Неполади (м)', data: ludLevels, borderColor: '#1e88e5', backgroundColor: 'rgba(30,136,229,0.1)', borderWidth: 3, fill: true, tension: 0.2, pointRadius: 5 },
                 { label: 'НПУ (181,0 м)', data: Array(ludLabels.length).fill(NPU_LUD), borderColor: '#c62828', borderWidth: 2, borderDash: [8,6], fill: false, pointRadius: 0 }
             ] },
-            options: { responsive: true, maintainAspectRatio: true, scales: { y: { title: { display: true, text: 'Уровень (м)' }, min: 179.0, max: 182.0 } } }
+            options: { responsive: true, maintainAspectRatio: true, scales: { y: { title: { display: true, text: 'Уровень (м)' }, min: 179.0, max: 181.5 } } }
         });
     }
     
@@ -415,7 +415,7 @@
         charts.ludDischarge = new Chart(ctx, {
             type: 'line',
             data: { labels: ludLabels, datasets: [{ label: 'Расчётный сброс (м³/с)', data: ludDischarge, borderColor: '#ef6c00', backgroundColor: 'rgba(239,108,0,0.1)', borderWidth: 3, fill: true, tension: 0.2, pointRadius: 5 }] },
-            options: { responsive: true, maintainAspectRatio: true, scales: { y: { title: { display: true, text: 'м³/с' }, min: 0, max: 50 } } }
+            options: { responsive: true, maintainAspectRatio: true, scales: { y: { title: { display: true, text: 'м³/с' }, min: 0, max: 55 } } }
         });
     }
     
@@ -466,7 +466,7 @@
                 { label: '2022 год (331 см)', data: Array(dates.length).fill(331), borderColor: '#ff9800', borderDash: [5,5], fill: false },
                 { label: '2013 год (414 см)', data: Array(dates.length).fill(414), borderColor: '#9c27b0', borderDash: [5,5], fill: false }
             ] },
-            options: { responsive: true, scales: { y: { title: { display: true, text: 'см' }, min: 280, max: 350 } } }
+            options: { responsive: true, scales: { y: { title: { display: true, text: 'см' }, min: 280, max: 360 } } }
         });
     }
     
