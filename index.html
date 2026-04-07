@@ -438,91 +438,292 @@ function renderLudLevelChart() {
     });
 }
     function renderLudDischargeChart() {
-        const ctx = document.getElementById('ludDischargeChart').getContext('2d');
-        if (charts.ludDischarge) charts.ludDischarge.destroy();
-        charts.ludDischarge = new Chart(ctx, {
-            type: 'line',
-            data: { labels: ludLabels, datasets: [{ label: 'Расчётный сброс (м³/с)', data: ludDischarge, borderColor: '#ef6c00', backgroundColor: 'rgba(239,108,0,0.1)', borderWidth: 3, fill: true, tension: 0.2, pointRadius: 5 }] },
-            options: { responsive: true, maintainAspectRatio: true, scales: { y: { title: { display: true, text: 'м³/с' }, min: -5, max: 55 } } }
-        });
-    }
+    const ctx = document.getElementById('ludDischargeChart').getContext('2d');
+    if (charts.ludDischarge) charts.ludDischarge.destroy();
+    charts.ludDischarge = new Chart(ctx, {
+        type: 'line',
+        data: { labels: ludLabels, datasets: [
+            { 
+                label: 'Расчётный сброс (м³/с)',
+                data: ludDischarge,
+                borderColor: '#ef6c00',
+                backgroundColor: 'rgba(239,108,0,0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.2,
+                // === ИСПРАВЛЕНИЯ ДЛЯ ВЫКОЛОТЫХ ТОЧЕК ===
+                pointRadius: 6,                 // размер точки
+                pointBorderColor: '#ffffff',    // белая обводка вокруг точки
+                pointBorderWidth: 2.5,          // толщина обводки
+                pointBackgroundColor: '#ef6c00', // цвет заливки точки (как линия)
+                pointHoverRadius: 8,            // увеличение при наведении
+                order: 0                        // точки поверх линии (чем меньше число, тем выше слой)
+            }
+        ] },
+        options: { 
+            responsive: true, 
+            maintainAspectRatio: true, 
+            scales: { 
+                y: { 
+                    title: { display: true, text: 'м³/с' }, 
+                    min: -5, 
+                    max: 55 
+                } 
+            } 
+        }
+    });
+}
     
     function renderGesDischargeChart() {
-        const ctx = document.getElementById('gesDischargeChart').getContext('2d');
-        if (charts.gesDischarge) charts.gesDischarge.destroy();
-        charts.gesDischarge = new Chart(ctx, {
-            type: 'line',
-            data: { labels: gesDates, datasets: [{ label: 'Сброс Десногорской ГЭС (м³/с)', data: gesDischarge, borderColor: '#1e88e5', backgroundColor: 'rgba(30,136,229,0.1)', borderWidth: 3, fill: true, tension: 0.2, pointRadius: 5 }] },
-            options: { responsive: true, maintainAspectRatio: true, scales: { y: { title: { display: true, text: 'м³/с' }, min: 0, max: 50 } } }
-        });
-    }
-    
-    function renderPsurChart() {
-        const ctx = document.getElementById('psurChart').getContext('2d');
-        if (charts.psur) charts.psur.destroy();
-        charts.psur = new Chart(ctx, {
-            type: 'line', data: { labels: dates, datasets: [
-                { label: 'Псурь (см)', data: psurLevels, borderColor: '#e53935', borderWidth: 3, fill: true, tension: 0.3 },
-                { label: 'Внимание (350 см)', data: Array(dates.length).fill(350), borderColor: '#ff9800', borderDash: [5,5], fill: false },
-                { label: 'Опасно (400 см)', data: Array(dates.length).fill(400), borderColor: '#c62828', borderDash: [8,6], fill: false }
-            ] },
-            options: { responsive: true, scales: { y: { title: { display: true, text: 'см' }, min: 230, max: 410 } } }
-        });
-    }
-    
-    function renderBolvaChart() {
-        const ctx = document.getElementById('bolvaChart').getContext('2d');
-        if (charts.bolva) charts.bolva.destroy();
-        charts.bolva = new Chart(ctx, {
-            type: 'line', data: { labels: dates, datasets: [
-                { label: 'Болва — Брянск (см)', data: bryanskLevels, borderColor: '#1e88e5', borderWidth: 3, fill: true, tension: 0.3 },
-                { label: 'Порог подтопления (530 см)', data: Array(dates.length).fill(530), borderColor: '#c62828', borderDash: [8,6], fill: false },
-                { label: '2022 год (716 см)', data: Array(dates.length).fill(716), borderColor: '#ff9800', borderDash: [5,5], fill: false },
-                { label: '2013 год (759 см)', data: Array(dates.length).fill(759), borderColor: '#9c27b0', borderDash: [5,5], fill: false }
-            ] },
-            options: { responsive: true, scales: { y: { title: { display: true, text: 'см' }, min: 400, max: 550 } } }
-        });
-    }
-    
-    function renderGolubeyaChart() {
-        const ctx = document.getElementById('golubeyaChart').getContext('2d');
-        if (charts.golubeya) charts.golubeya.destroy();
-        charts.golubeya = new Chart(ctx, {
-            type: 'line', data: { labels: dates, datasets: [
-                { label: 'Десна — Голубея (см)', data: golubeyaLevels, borderColor: '#43a047', borderWidth: 2, fill: true, tension: 0.3 },
-                { label: 'Внимание (300 см)', data: Array(dates.length).fill(300), borderColor: '#ff9800', borderDash: [5,5], fill: false },
-                { label: '2022 год (331 см)', data: Array(dates.length).fill(331), borderColor: '#ff9800', borderDash: [5,5], fill: false },
-                { label: '2013 год (414 см)', data: Array(dates.length).fill(414), borderColor: '#9c27b0', borderDash: [5,5], fill: false }
-            ] },
-            options: { responsive: true, scales: { y: { title: { display: true, text: 'см' }, min: 280, max: 360 } } }
-        });
-    }
-    
-    function renderDesnaBryanskChart() {
-        const ctx = document.getElementById('desnaBryanskChart').getContext('2d');
-        if (charts.desnaBryansk) charts.desnaBryansk.destroy();
-        charts.desnaBryansk = new Chart(ctx, {
-            type: 'line', data: { labels: dates, datasets: [
-                { label: 'Десна — Брянск (см)', data: desnaBryanskLevels, borderColor: '#43a047', borderWidth: 2, fill: true, tension: 0.3 },
-                { label: 'Начало подтопления (340 см)', data: Array(dates.length).fill(DESNA_FLOOD_START), borderColor: '#ff9800', borderDash: [5,5], fill: false },
-                { label: 'Опасный уровень (418 см)', data: Array(dates.length).fill(DESNA_DANGER), borderColor: '#c62828', borderDash: [8,6], fill: false }
-            ] },
-            options: { responsive: true, scales: { y: { title: { display: true, text: 'см' }, min: 150, max: 350 } } }
-        });
-    }
-    
-    function renderTrubchevskChart() {
-        const ctx = document.getElementById('trubchevskChart').getContext('2d');
-        if (charts.trubchevsk) charts.trubchevsk.destroy();
-        charts.trubchevsk = new Chart(ctx, {
-            type: 'line', data: { labels: dates, datasets: [
-                { label: 'Десна — Трубчевск (см)', data: trubchevskLevels, borderColor: '#9c27b0', borderWidth: 2, fill: true, tension: 0.3 },
-                { label: '2022 год (373 см)', data: Array(dates.length).fill(373), borderColor: '#ff9800', borderDash: [5,5], fill: false },
-                { label: '2013 год (418 см)', data: Array(dates.length).fill(418), borderColor: '#c62828', borderDash: [5,5], fill: false }
-            ] },
-            options: { responsive: true, scales: { y: { title: { display: true, text: 'см' }, min: 220, max: 350 } } }
-        });
-    }
+    const ctx = document.getElementById('gesDischargeChart').getContext('2d');
+    if (charts.gesDischarge) charts.gesDischarge.destroy();
+    charts.gesDischarge = new Chart(ctx, {
+        type: 'line',
+        data: { labels: gesDates, datasets: [{ 
+            label: 'Сброс Десногорской ГЭС (м³/с)', 
+            data: gesDischarge, 
+            borderColor: '#1e88e5', 
+            backgroundColor: 'rgba(30,136,229,0.1)', 
+            borderWidth: 3, 
+            fill: true, 
+            tension: 0.2, 
+            // === ВЫКОЛОТЫЕ ТОЧКИ ===
+            pointRadius: 6,
+            pointBorderColor: '#ffffff',
+            pointBorderWidth: 2.5,
+            pointBackgroundColor: '#1e88e5',
+            pointHoverRadius: 8,
+            order: 0
+        }] },
+        options: { responsive: true, maintainAspectRatio: true, scales: { y: { title: { display: true, text: 'м³/с' }, min: 0, max: 50 } } }
+    });
+}
+
+function renderPsurChart() {
+    const ctx = document.getElementById('psurChart').getContext('2d');
+    if (charts.psur) charts.psur.destroy();
+    charts.psur = new Chart(ctx, {
+        type: 'line', 
+        data: { labels: dates, datasets: [
+            { 
+                label: 'Псурь (см)', 
+                data: psurLevels, 
+                borderColor: '#e53935', 
+                borderWidth: 3, 
+                fill: true, 
+                tension: 0.3,
+                // === ВЫКОЛОТЫЕ ТОЧКИ ===
+                pointRadius: 5,
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 2,
+                pointBackgroundColor: '#e53935',
+                pointHoverRadius: 7,
+                order: 0
+            },
+            { 
+                label: 'Внимание (350 см)', 
+                data: Array(dates.length).fill(350), 
+                borderColor: '#ff9800', 
+                borderDash: [5,5], 
+                fill: false, 
+                pointRadius: 0 
+            },
+            { 
+                label: 'Опасно (400 см)', 
+                data: Array(dates.length).fill(400), 
+                borderColor: '#c62828', 
+                borderDash: [8,6], 
+                fill: false, 
+                pointRadius: 0 
+            }
+        ] },
+        options: { responsive: true, scales: { y: { title: { display: true, text: 'см' }, min: 230, max: 410 } } }
+    });
+}
+
+function renderBolvaChart() {
+    const ctx = document.getElementById('bolvaChart').getContext('2d');
+    if (charts.bolva) charts.bolva.destroy();
+    charts.bolva = new Chart(ctx, {
+        type: 'line', 
+        data: { labels: dates, datasets: [
+            { 
+                label: 'Болва — Брянск (см)', 
+                data: bryanskLevels, 
+                borderColor: '#1e88e5', 
+                borderWidth: 3, 
+                fill: true, 
+                tension: 0.3,
+                // === ВЫКОЛОТЫЕ ТОЧКИ ===
+                pointRadius: 5,
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 2,
+                pointBackgroundColor: '#1e88e5',
+                pointHoverRadius: 7,
+                order: 0
+            },
+            { 
+                label: 'Порог подтопления (530 см)', 
+                data: Array(dates.length).fill(530), 
+                borderColor: '#c62828', 
+                borderDash: [8,6], 
+                fill: false, 
+                pointRadius: 0 
+            },
+            { 
+                label: '2022 год (716 см)', 
+                data: Array(dates.length).fill(716), 
+                borderColor: '#ff9800', 
+                borderDash: [5,5], 
+                fill: false, 
+                pointRadius: 0 
+            },
+            { 
+                label: '2013 год (759 см)', 
+                data: Array(dates.length).fill(759), 
+                borderColor: '#9c27b0', 
+                borderDash: [5,5], 
+                fill: false, 
+                pointRadius: 0 
+            }
+        ] },
+        options: { responsive: true, scales: { y: { title: { display: true, text: 'см' }, min: 400, max: 550 } } }
+    });
+}
+
+function renderGolubeyaChart() {
+    const ctx = document.getElementById('golubeyaChart').getContext('2d');
+    if (charts.golubeya) charts.golubeya.destroy();
+    charts.golubeya = new Chart(ctx, {
+        type: 'line', 
+        data: { labels: dates, datasets: [
+            { 
+                label: 'Десна — Голубея (см)', 
+                data: golubeyaLevels, 
+                borderColor: '#43a047', 
+                borderWidth: 2, 
+                fill: true, 
+                tension: 0.3,
+                // === ВЫКОЛОТЫЕ ТОЧКИ ===
+                pointRadius: 5,
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 2,
+                pointBackgroundColor: '#43a047',
+                pointHoverRadius: 7,
+                order: 0
+            },
+            { 
+                label: 'Внимание (300 см)', 
+                data: Array(dates.length).fill(300), 
+                borderColor: '#ff9800', 
+                borderDash: [5,5], 
+                fill: false, 
+                pointRadius: 0 
+            },
+            { 
+                label: '2022 год (331 см)', 
+                data: Array(dates.length).fill(331), 
+                borderColor: '#ff9800', 
+                borderDash: [5,5], 
+                fill: false, 
+                pointRadius: 0 
+            },
+            { 
+                label: '2013 год (414 см)', 
+                data: Array(dates.length).fill(414), 
+                borderColor: '#9c27b0', 
+                borderDash: [5,5], 
+                fill: false, 
+                pointRadius: 0 
+            }
+        ] },
+        options: { responsive: true, scales: { y: { title: { display: true, text: 'см' }, min: 280, max: 360 } } }
+    });
+}
+
+function renderDesnaBryanskChart() {
+    const ctx = document.getElementById('desnaBryanskChart').getContext('2d');
+    if (charts.desnaBryansk) charts.desnaBryansk.destroy();
+    charts.desnaBryansk = new Chart(ctx, {
+        type: 'line', 
+        data: { labels: dates, datasets: [
+            { 
+                label: 'Десна — Брянск (см)', 
+                data: desnaBryanskLevels, 
+                borderColor: '#43a047', 
+                borderWidth: 2, 
+                fill: true, 
+                tension: 0.3,
+                // === ВЫКОЛОТЫЕ ТОЧКИ ===
+                pointRadius: 5,
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 2,
+                pointBackgroundColor: '#43a047',
+                pointHoverRadius: 7,
+                order: 0
+            },
+            { 
+                label: 'Начало подтопления (340 см)', 
+                data: Array(dates.length).fill(DESNA_FLOOD_START), 
+                borderColor: '#ff9800', 
+                borderDash: [5,5], 
+                fill: false, 
+                pointRadius: 0 
+            },
+            { 
+                label: 'Опасный уровень (418 см)', 
+                data: Array(dates.length).fill(DESNA_DANGER), 
+                borderColor: '#c62828', 
+                borderDash: [8,6], 
+                fill: false, 
+                pointRadius: 0 
+            }
+        ] },
+        options: { responsive: true, scales: { y: { title: { display: true, text: 'см' }, min: 150, max: 350 } } }
+    });
+}
+
+function renderTrubchevskChart() {
+    const ctx = document.getElementById('trubchevskChart').getContext('2d');
+    if (charts.trubchevsk) charts.trubchevsk.destroy();
+    charts.trubchevsk = new Chart(ctx, {
+        type: 'line', 
+        data: { labels: dates, datasets: [
+            { 
+                label: 'Десна — Трубчевск (см)', 
+                data: trubchevskLevels, 
+                borderColor: '#9c27b0', 
+                borderWidth: 2, 
+                fill: true, 
+                tension: 0.3,
+                // === ВЫКОЛОТЫЕ ТОЧКИ ===
+                pointRadius: 5,
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 2,
+                pointBackgroundColor: '#9c27b0',
+                pointHoverRadius: 7,
+                order: 0
+            },
+            { 
+                label: '2022 год (373 см)', 
+                data: Array(dates.length).fill(373), 
+                borderColor: '#ff9800', 
+                borderDash: [5,5], 
+                fill: false, 
+                pointRadius: 0 
+            },
+            { 
+                label: '2013 год (418 см)', 
+                data: Array(dates.length).fill(418), 
+                borderColor: '#c62828', 
+                borderDash: [5,5], 
+                fill: false, 
+                pointRadius: 0 
+            }
+        ] },
+        options: { responsive: true, scales: { y: { title: { display: true, text: 'см' }, min: 220, max: 350 } } }
+    });
+}
     
     // ========= ОБЩИЕ ФУНКЦИИ =========
     function updateLudInfo() {
