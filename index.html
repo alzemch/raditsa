@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Радица-Крыловка — прогноз паводка (автотемп, данные 06.04)</title>
+    <title>Радица-Крыловка — прогноз паводка (автотемп, данные 07.04)</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -396,19 +396,47 @@
     let charts = {};
     
     // ========= ОТРИСОВКА ГРАФИКОВ =========
-    function renderLudLevelChart() {
-        const ctx = document.getElementById('ludLevelChart').getContext('2d');
-        if (charts.ludLevel) charts.ludLevel.destroy();
-        charts.ludLevel = new Chart(ctx, {
-            type: 'line',
-            data: { labels: ludLabels, datasets: [
-                { label: 'Уровень Неполади (м)', data: ludLevels, borderColor: '#1e88e5', backgroundColor: 'rgba(30,136,229,0.1)', borderWidth: 3, fill: true, tension: 0.2, pointRadius: 5 },
-                { label: 'НПУ (181,0 м)', data: Array(ludLabels.length).fill(NPU_LUD), borderColor: '#c62828', borderWidth: 2, borderDash: [8,6], fill: false, pointRadius: 0 }
-            ] },
-            options: { responsive: true, maintainAspectRatio: true, scales: { y: { title: { display: true, text: 'Уровень (м)' }, min: 179.0, max: 181.5 } } }
-        });
-    }
-    
+function renderLudLevelChart() {
+    const ctx = document.getElementById('ludLevelChart').getContext('2d');
+    if (charts.ludLevel) charts.ludLevel.destroy();
+    charts.ludLevel = new Chart(ctx, {
+        type: 'line',
+        data: { labels: ludLabels, datasets: [
+            { 
+                label: 'Уровень Неполади (м)', 
+                data: ludLevels, 
+                borderColor: '#1e88e5', 
+                backgroundColor: 'rgba(30,136,229,0.1)', 
+                borderWidth: 3, 
+                fill: true, 
+                tension: 0.2, 
+                // === ИСПРАВЛЕНИЯ ДЛЯ ВЫКОЛОТЫХ ТОЧЕК ===
+                pointRadius: 6,              // размер точки (увеличен)
+                pointBorderColor: '#ffffff', // белая обводка вокруг точки
+                pointBorderWidth: 2.5,       // толщина обводки
+                pointBackgroundColor: '#1e88e5', // цвет заливки точки
+                pointHoverRadius: 8,         // увеличение при наведении
+                order: 0                     // точки поверх линии (чем меньше, тем выше слой)
+            },
+            { 
+                label: 'НПУ (181,0 м)', 
+                data: Array(ludLabels.length).fill(NPU_LUD), 
+                borderColor: '#c62828', 
+                borderWidth: 2, 
+                borderDash: [8,6], 
+                fill: false, 
+                pointRadius: 0               // у НПУ точки не нужны
+            }
+        ] },
+        options: { 
+            responsive: true, 
+            maintainAspectRatio: true, 
+            scales: { 
+                y: { title: { display: true, text: 'Уровень (м)' }, min: 179.0, max: 181.5 } 
+            } 
+        }
+    });
+}
     function renderLudDischargeChart() {
         const ctx = document.getElementById('ludDischargeChart').getContext('2d');
         if (charts.ludDischarge) charts.ludDischarge.destroy();
