@@ -386,6 +386,360 @@ function getAutoMinMax(data, padding = 10) {
         return Math.round(100 + (level - 181.00) * 50);
     }
     
+    let ludDischarge = ludData.map(d => estimateDischarge(d.level));
+    let ludLevels = ludData.map(d => d.level);
+    let ludLabels = ludData.map(d => d.date);
+    
+    let charts = {};
+    
+    // ===== АВТО-МАСШТАБ: вычисляет min/max с запасом padding =====
+    function getAutoMinMax(data, padding = 10) {
+        if (!data || data.length === 0) return { min: 0, max: 100 };
+        const validData = data.filter(v => v !== null && v !== undefined && !isNaN(v));
+        if (validData.length === 0) return { min: 0, max: 100 };
+        const min = Math.min(...validData);
+        const max = Math.max(...validData);
+        return {
+            min: Math.floor(min - padding),
+            max: Math.ceil(max + padding)
+        };
+    }
+    
+    // ========= ОТРИСОВКА ГРАФИКОВ =========
+    function renderLudLevelChart() {
+        const ctx = document.getElementById('ludLevelChart').getContext('2d');
+        if (charts.ludLevel) charts.ludLevel.destroy();
+        const { min, max } = getAutoMinMax(ludLevels, 0.5);
+        charts.ludLevel = new Chart(ctx, {
+            type: 'line',
+            data: { labels: ludLabels, datasets: [
+                { 
+                    label: 'Уровень Неполади (м)', 
+                    data: ludLevels, 
+                    borderColor: '#1e88e5', 
+                    backgroundColor: 'rgba(30,136,229,0.1)', 
+                    borderWidth: 3, 
+                    fill: true, 
+                    tension: 0.2, 
+                    pointRadius: 6,
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 2.5,
+                    pointBackgroundColor: '#1e88e5',
+                    pointHoverRadius: 8,
+                    order: 0
+                },
+                { 
+                    label: 'НПУ (181,0 м)', 
+                    data: Array(ludLabels.length).fill(NPU_LUD), 
+                    borderColor: '#c62828', 
+                    borderWidth: 2, 
+                    borderDash: [8,6], 
+                    fill: false, 
+                    pointRadius: 0
+                }
+            ] },
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: true, 
+                scales: { 
+                    y: { title: { display: true, text: 'Уровень (м)' }, min: min, max: max } 
+                } 
+            }
+        });
+    }
+    
+    function renderLudDischargeChart() {
+        const ctx = document.getElementById('ludDischargeChart').getContext('2d');
+        if (charts.ludDischarge) charts.ludDischarge.destroy();
+        const { min, max } = getAutoMinMax(ludDischarge, 10);
+        charts.ludDischarge = new Chart(ctx, {
+            type: 'line',
+            data: { labels: ludLabels, datasets: [
+                { 
+                    label: 'Расчётный сброс (м³/с)',
+                    data: ludDischarge,
+                    borderColor: '#ef6c00',
+                    backgroundColor: 'rgba(239,108,0,0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.2,
+                    pointRadius: 6,
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 2.5,
+                    pointBackgroundColor: '#ef6c00',
+                    pointHoverRadius: 8,
+                    order: 0
+                }
+            ] },
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: true, 
+                scales: { 
+                    y: { title: { display: true, text: 'м³/с' }, min: min, max: max } 
+                } 
+            }
+        });
+    }
+    
+    function renderGesDischargeChart() {
+        const ctx = document.getElementById('gesDischargeChart').getContext('2d');
+        if (charts.gesDischarge) charts.gesDischarge.destroy();
+        const { min, max } = getAutoMinMax(gesDischarge, 10);
+        charts.gesDischarge = new Chart(ctx, {
+            type: 'line',
+            data: { labels: gesDates, datasets: [{ 
+                label: 'Сброс Десногорской ГЭС (м³/с)', 
+                data: gesDischarge, 
+                borderColor: '#1e88e5', 
+                backgroundColor: 'rgba(30,136,229,0.1)', 
+                borderWidth: 3, 
+                fill: true, 
+                tension: 0.2, 
+                pointRadius: 6,
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 2.5,
+                pointBackgroundColor: '#1e88e5',
+                pointHoverRadius: 8,
+                order: 0
+            }] },
+            options: { responsive: true, maintainAspectRatio: true, scales: { y: { title: { display: true, text: 'м³/с' }, min: min, max: max } } }
+        });
+    }
+
+    function renderPsurChart() {
+        const ctx = document.getElementById('psurChart').getContext('2d');
+        if (charts.psur) charts.psur.destroy();
+        const { min, max } = getAutoMinMax(psurLevels, 20);
+        charts.psur = new Chart(ctx, {
+            type: 'line', 
+            data: { labels: dates, datasets: [
+                { 
+                    label: 'Псурь (см)', 
+                    data: psurLevels, 
+                    borderColor: '#e53935', 
+                    borderWidth: 3, 
+                    fill: true, 
+                    tension: 0.3,
+                    pointRadius: 5,
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 2,
+                    pointBackgroundColor: '#e53935',
+                    pointHoverRadius: 7,
+                    order: 0
+                },
+                { 
+                    label: 'Внимание (350 см)', 
+                    data: Array(dates.length).fill(350), 
+                    borderColor: '#ff9800', 
+                    borderDash: [5,5], 
+                    fill: false, 
+                    pointRadius: 0 
+                },
+                { 
+                    label: 'Опасно (400 см)', 
+                    data: Array(dates.length).fill(400), 
+                    borderColor: '#c62828', 
+                    borderDash: [8,6], 
+                    fill: false, 
+                    pointRadius: 0 
+                }
+            ] },
+            options: { responsive: true, scales: { y: { title: { display: true, text: 'см' }, min: min, max: max } } }
+        });
+    }
+
+    function renderBolvaChart() {
+        const ctx = document.getElementById('bolvaChart').getContext('2d');
+        if (charts.bolva) charts.bolva.destroy();
+        const { min, max } = getAutoMinMax(bryanskLevels, 30);
+        charts.bolva = new Chart(ctx, {
+            type: 'line', 
+            data: { labels: dates, datasets: [
+                { 
+                    label: 'Болва — Брянск (см)', 
+                    data: bryanskLevels, 
+                    borderColor: '#1e88e5', 
+                    borderWidth: 3, 
+                    fill: true, 
+                    tension: 0.3,
+                    pointRadius: 5,
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 2,
+                    pointBackgroundColor: '#1e88e5',
+                    pointHoverRadius: 7,
+                    order: 0
+                },
+                { 
+                    label: 'Порог подтопления (530 см)', 
+                    data: Array(dates.length).fill(530), 
+                    borderColor: '#c62828', 
+                    borderDash: [8,6], 
+                    fill: false, 
+                    pointRadius: 0 
+                },
+                { 
+                    label: '2022 год (716 см)', 
+                    data: Array(dates.length).fill(716), 
+                    borderColor: '#ff9800', 
+                    borderDash: [5,5], 
+                    fill: false, 
+                    pointRadius: 0 
+                },
+                { 
+                    label: '2013 год (759 см)', 
+                    data: Array(dates.length).fill(759), 
+                    borderColor: '#9c27b0', 
+                    borderDash: [5,5], 
+                    fill: false, 
+                    pointRadius: 0 
+                }
+            ] },
+            options: { responsive: true, scales: { y: { title: { display: true, text: 'см' }, min: min, max: max } } }
+        });
+    }
+
+    function renderGolubeyaChart() {
+        const ctx = document.getElementById('golubeyaChart').getContext('2d');
+        if (charts.golubeya) charts.golubeya.destroy();
+        const { min, max } = getAutoMinMax(golubeyaLevels, 20);
+        charts.golubeya = new Chart(ctx, {
+            type: 'line', 
+            data: { labels: dates, datasets: [
+                { 
+                    label: 'Десна — Голубея (см)', 
+                    data: golubeyaLevels, 
+                    borderColor: '#43a047', 
+                    borderWidth: 2, 
+                    fill: true, 
+                    tension: 0.3,
+                    pointRadius: 5,
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 2,
+                    pointBackgroundColor: '#43a047',
+                    pointHoverRadius: 7,
+                    order: 0
+                },
+                { 
+                    label: 'Внимание (300 см)', 
+                    data: Array(dates.length).fill(300), 
+                    borderColor: '#ff9800', 
+                    borderDash: [5,5], 
+                    fill: false, 
+                    pointRadius: 0 
+                },
+                { 
+                    label: '2022 год (331 см)', 
+                    data: Array(dates.length).fill(331), 
+                    borderColor: '#ff9800', 
+                    borderDash: [5,5], 
+                    fill: false, 
+                    pointRadius: 0 
+                },
+                { 
+                    label: '2013 год (414 см)', 
+                    data: Array(dates.length).fill(414), 
+                    borderColor: '#9c27b0', 
+                    borderDash: [5,5], 
+                    fill: false, 
+                    pointRadius: 0 
+                }
+            ] },
+            options: { responsive: true, scales: { y: { title: { display: true, text: 'см' }, min: min, max: max } } }
+        });
+    }
+
+    function renderDesnaBryanskChart() {
+        const ctx = document.getElementById('desnaBryanskChart').getContext('2d');
+        if (charts.desnaBryansk) charts.desnaBryansk.destroy();
+        const { min, max } = getAutoMinMax(desnaBryanskLevels, 30);
+        charts.desnaBryansk = new Chart(ctx, {
+            type: 'line', 
+            data: { labels: dates, datasets: [
+                { 
+                    label: 'Десна — Брянск (см)', 
+                    data: desnaBryanskLevels, 
+                    borderColor: '#43a047', 
+                    borderWidth: 2, 
+                    fill: true, 
+                    tension: 0.3,
+                    pointRadius: 5,
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 2,
+                    pointBackgroundColor: '#43a047',
+                    pointHoverRadius: 7,
+                    order: 0
+                },
+                { 
+                    label: 'Начало подтопления (340 см)', 
+                    data: Array(dates.length).fill(DESNA_FLOOD_START), 
+                    borderColor: '#ff9800', 
+                    borderDash: [5,5], 
+                    fill: false, 
+                    pointRadius: 0 
+                },
+                { 
+                    label: 'Опасный уровень (418 см)', 
+                    data: Array(dates.length).fill(DESNA_DANGER), 
+                    borderColor: '#c62828', 
+                    borderDash: [8,6], 
+                    fill: false, 
+                    pointRadius: 0 
+                }
+            ] },
+            options: { responsive: true, scales: { y: { title: { display: true, text: 'см' }, min: min, max: max } } }
+        });
+    }
+
+    function renderTrubchevskChart() {
+        const ctx = document.getElementById('trubchevskChart').getContext('2d');
+        if (charts.trubchevsk) charts.trubchevsk.destroy();
+        const { min, max } = getAutoMinMax(trubchevskLevels, 30);
+        charts.trubchevsk = new Chart(ctx, {
+            type: 'line', 
+            data: { labels: dates, datasets: [
+                { 
+                    label: 'Десна — Трубчевск (см)', 
+                    data: trubchevskLevels, 
+                    borderColor: '#9c27b0', 
+                    borderWidth: 2, 
+                    fill: true, 
+                    tension: 0.3,
+                    pointRadius: 5,
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 2,
+                    pointBackgroundColor: '#9c27b0',
+                    pointHoverRadius: 7,
+                    order: 0
+                },
+                { 
+                    label: '2022 год (373 см)', 
+                    data: Array(dates.length).fill(373), 
+                    borderColor: '#ff9800', 
+                    borderDash: [5,5], 
+                    fill: false, 
+                    pointRadius: 0 
+                },
+                { 
+                    label: '2013 год (418 см)', 
+                    data: Array(dates.length).fill(418), 
+                    borderColor: '#c62828', 
+                    borderDash: [5,5], 
+                    fill: false, 
+                    pointRadius: 0 
+                }
+            ] },
+            options: { responsive: true, scales: { y: { title: { display: true, text: 'см' }, min: min, max: max } } }
+        });
+    }
+    
+    // ========= ОБЩИЕ ФУНКЦИИ =========
+    function updateLudInfo() {
+        const current = ludData[ludData.length-1].level;
+        const discharge = estimateDischarge(current);
+        document.getElementById('currentLudLevel').innerText = current.toFixed(2);
+        document.getElementById('calcDischarge').innerHTML = `~${discharge}`;
+    }
+    
     // Автоматический расчёт темпа роста Болвы (Брянск)
     function getGrowthRate() {
         if (bryanskLevels.length < 2) return 0;
@@ -401,350 +755,6 @@ function getAutoMinMax(data, padding = 10) {
     else if (growthRate <= 5) { rateClass = 'rate-moderate'; rateText = 'умеренный рост'; }
     else if (growthRate <= 10) { rateClass = 'rate-active'; rateText = 'активный рост'; }
     else { rateClass = 'rate-fast'; rateText = 'критический рост'; }
-    
-    let ludDischarge = ludData.map(d => estimateDischarge(d.level));
-    let ludLevels = ludData.map(d => d.level);
-    let ludLabels = ludData.map(d => d.date);
-    
-    let charts = {};
-    
-    // ========= ОТРИСОВКА ГРАФИКОВ =========
-function renderLudLevelChart() {
-    const ctx = document.getElementById('ludLevelChart').getContext('2d');
-    if (charts.ludLevel) charts.ludLevel.destroy();
-    charts.ludLevel = new Chart(ctx, {
-        type: 'line',
-        data: { labels: ludLabels, datasets: [
-            { 
-                label: 'Уровень Неполади (м)', 
-                data: ludLevels, 
-                borderColor: '#1e88e5', 
-                backgroundColor: 'rgba(30,136,229,0.1)', 
-                borderWidth: 3, 
-                fill: true, 
-                tension: 0.2, 
-                // === ИСПРАВЛЕНИЯ ДЛЯ ВЫКОЛОТЫХ ТОЧЕК ===
-                pointRadius: 6,              // размер точки (увеличен)
-                pointBorderColor: '#ffffff', // белая обводка вокруг точки
-                pointBorderWidth: 2.5,       // толщина обводки
-                pointBackgroundColor: '#1e88e5', // цвет заливки точки
-                pointHoverRadius: 8,         // увеличение при наведении
-                order: 0                     // точки поверх линии (чем меньше, тем выше слой)
-            },
-            { 
-                label: 'НПУ (181,0 м)', 
-                data: Array(ludLabels.length).fill(NPU_LUD), 
-                borderColor: '#c62828', 
-                borderWidth: 2, 
-                borderDash: [8,6], 
-                fill: false, 
-                pointRadius: 0               // у НПУ точки не нужны
-            }
-        ] },
-        options: { 
-            responsive: true, 
-            maintainAspectRatio: true, 
-            scales: { 
-                y: { title: { display: true, text: 'Уровень (м)' }, min: min, max: max } 
-            } 
-        }
-    });
-}
-    function renderLudDischargeChart() {
-    const ctx = document.getElementById('ludDischargeChart').getContext('2d');
-    if (charts.ludDischarge) charts.ludDischarge.destroy();
-    charts.ludDischarge = new Chart(ctx, {
-        type: 'line',
-        data: { labels: ludLabels, datasets: [
-            { 
-                label: 'Расчётный сброс (м³/с)',
-                data: ludDischarge,
-                borderColor: '#ef6c00',
-                backgroundColor: 'rgba(239,108,0,0.1)',
-                borderWidth: 3,
-                fill: true,
-                tension: 0.2,
-                // === ИСПРАВЛЕНИЯ ДЛЯ ВЫКОЛОТЫХ ТОЧЕК ===
-                pointRadius: 6,                 // размер точки
-                pointBorderColor: '#ffffff',    // белая обводка вокруг точки
-                pointBorderWidth: 2.5,          // толщина обводки
-                pointBackgroundColor: '#ef6c00', // цвет заливки точки (как линия)
-                pointHoverRadius: 8,            // увеличение при наведении
-                order: 0                        // точки поверх линии (чем меньше число, тем выше слой)
-            }
-        ] },
-        options: { 
-            responsive: true, 
-            maintainAspectRatio: true, 
-            scales: { 
-                y: { 
-                    title: { display: true, text: 'м³/с' }, 
-                    min: -5, 
-                    max: 70 
-                } 
-            } 
-        }
-    });
-}
-    
-    function renderGesDischargeChart() {
-    const ctx = document.getElementById('gesDischargeChart').getContext('2d');
-    if (charts.gesDischarge) charts.gesDischarge.destroy();
-    charts.gesDischarge = new Chart(ctx, {
-        type: 'line',
-        data: { labels: gesDates, datasets: [{ 
-            label: 'Сброс Десногорской ГЭС (м³/с)', 
-            data: gesDischarge, 
-            borderColor: '#1e88e5', 
-            backgroundColor: 'rgba(30,136,229,0.1)', 
-            borderWidth: 3, 
-            fill: true, 
-            tension: 0.2, 
-            // === ВЫКОЛОТЫЕ ТОЧКИ ===
-            pointRadius: 6,
-            pointBorderColor: '#ffffff',
-            pointBorderWidth: 2.5,
-            pointBackgroundColor: '#1e88e5',
-            pointHoverRadius: 8,
-            order: 0
-        }] },
-        options: { responsive: true, maintainAspectRatio: true, scales: { y: { title: { display: true, text: 'м³/с' }, min: 0, max: 50 } } }
-    });
-}
-
-function renderPsurChart() {
-    const ctx = document.getElementById('psurChart').getContext('2d');
-    if (charts.psur) charts.psur.destroy();
-    charts.psur = new Chart(ctx, {
-        type: 'line', 
-        data: { labels: dates, datasets: [
-            { 
-                label: 'Псурь (см)', 
-                data: psurLevels, 
-                borderColor: '#e53935', 
-                borderWidth: 3, 
-                fill: true, 
-                tension: 0.3,
-                // === ВЫКОЛОТЫЕ ТОЧКИ ===
-                pointRadius: 5,
-                pointBorderColor: '#ffffff',
-                pointBorderWidth: 2,
-                pointBackgroundColor: '#e53935',
-                pointHoverRadius: 7,
-                order: 0
-            },
-            { 
-                label: 'Внимание (350 см)', 
-                data: Array(dates.length).fill(350), 
-                borderColor: '#ff9800', 
-                borderDash: [5,5], 
-                fill: false, 
-                pointRadius: 0 
-            },
-            { 
-                label: 'Опасно (400 см)', 
-                data: Array(dates.length).fill(400), 
-                borderColor: '#c62828', 
-                borderDash: [8,6], 
-                fill: false, 
-                pointRadius: 0 
-            }
-        ] },
-        options: { responsive: true, scales: { y: { title: { display: true, text: 'см' }, min: min, max: max } } }
-    });
-}
-
-function renderBolvaChart() {
-    const ctx = document.getElementById('bolvaChart').getContext('2d');
-    if (charts.bolva) charts.bolva.destroy();
-    charts.bolva = new Chart(ctx, {
-        type: 'line', 
-        data: { labels: dates, datasets: [
-            { 
-                label: 'Болва — Брянск (см)', 
-                data: bryanskLevels, 
-                borderColor: '#1e88e5', 
-                borderWidth: 3, 
-                fill: true, 
-                tension: 0.3,
-                // === ВЫКОЛОТЫЕ ТОЧКИ ===
-                pointRadius: 5,
-                pointBorderColor: '#ffffff',
-                pointBorderWidth: 2,
-                pointBackgroundColor: '#1e88e5',
-                pointHoverRadius: 7,
-                order: 0
-            },
-            { 
-                label: 'Порог подтопления (530 см)', 
-                data: Array(dates.length).fill(530), 
-                borderColor: '#c62828', 
-                borderDash: [8,6], 
-                fill: false, 
-                pointRadius: 0 
-            },
-            { 
-                label: '2022 год (716 см)', 
-                data: Array(dates.length).fill(716), 
-                borderColor: '#ff9800', 
-                borderDash: [5,5], 
-                fill: false, 
-                pointRadius: 0 
-            },
-            { 
-                label: '2013 год (759 см)', 
-                data: Array(dates.length).fill(759), 
-                borderColor: '#9c27b0', 
-                borderDash: [5,5], 
-                fill: false, 
-                pointRadius: 0 
-            }
-        ] },
-        options: { responsive: true, scales: { y: { title: { display: true, text: 'см' }, min: 400, max: 550 } } }
-    });
-}
-
-function renderGolubeyaChart() {
-    const ctx = document.getElementById('golubeyaChart').getContext('2d');
-    if (charts.golubeya) charts.golubeya.destroy();
-    charts.golubeya = new Chart(ctx, {
-        type: 'line', 
-        data: { labels: dates, datasets: [
-            { 
-                label: 'Десна — Голубея (см)', 
-                data: golubeyaLevels, 
-                borderColor: '#43a047', 
-                borderWidth: 2, 
-                fill: true, 
-                tension: 0.3,
-                // === ВЫКОЛОТЫЕ ТОЧКИ ===
-                pointRadius: 5,
-                pointBorderColor: '#ffffff',
-                pointBorderWidth: 2,
-                pointBackgroundColor: '#43a047',
-                pointHoverRadius: 7,
-                order: 0
-            },
-            { 
-                label: 'Внимание (300 см)', 
-                data: Array(dates.length).fill(300), 
-                borderColor: '#ff9800', 
-                borderDash: [5,5], 
-                fill: false, 
-                pointRadius: 0 
-            },
-            { 
-                label: '2022 год (331 см)', 
-                data: Array(dates.length).fill(331), 
-                borderColor: '#ff9800', 
-                borderDash: [5,5], 
-                fill: false, 
-                pointRadius: 0 
-            },
-            { 
-                label: '2013 год (414 см)', 
-                data: Array(dates.length).fill(414), 
-                borderColor: '#9c27b0', 
-                borderDash: [5,5], 
-                fill: false, 
-                pointRadius: 0 
-            }
-        ] },
-        options: { responsive: true, scales: { y: { title: { display: true, text: 'см' }, min: min, max: max } } }
-    });
-}
-
-function renderDesnaBryanskChart() {
-    const ctx = document.getElementById('desnaBryanskChart').getContext('2d');
-    if (charts.desnaBryansk) charts.desnaBryansk.destroy();
-    charts.desnaBryansk = new Chart(ctx, {
-        type: 'line', 
-        data: { labels: dates, datasets: [
-            { 
-                label: 'Десна — Брянск (см)', 
-                data: desnaBryanskLevels, 
-                borderColor: '#43a047', 
-                borderWidth: 2, 
-                fill: true, 
-                tension: 0.3,
-                // === ВЫКОЛОТЫЕ ТОЧКИ ===
-                pointRadius: 5,
-                pointBorderColor: '#ffffff',
-                pointBorderWidth: 2,
-                pointBackgroundColor: '#43a047',
-                pointHoverRadius: 7,
-                order: 0
-            },
-            { 
-                label: 'Начало подтопления (340 см)', 
-                data: Array(dates.length).fill(DESNA_FLOOD_START), 
-                borderColor: '#ff9800', 
-                borderDash: [5,5], 
-                fill: false, 
-                pointRadius: 0 
-            },
-            { 
-                label: 'Опасный уровень (418 см)', 
-                data: Array(dates.length).fill(DESNA_DANGER), 
-                borderColor: '#c62828', 
-                borderDash: [8,6], 
-                fill: false, 
-                pointRadius: 0 
-            }
-        ] },
-        options: { responsive: true, scales: { y: { title: { display: true, text: 'см' }, min: min, max: max } } }
-    });
-}
-
-function renderTrubchevskChart() {
-    const ctx = document.getElementById('trubchevskChart').getContext('2d');
-    if (charts.trubchevsk) charts.trubchevsk.destroy();
-    charts.trubchevsk = new Chart(ctx, {
-        type: 'line', 
-        data: { labels: dates, datasets: [
-            { 
-                label: 'Десна — Трубчевск (см)', 
-                data: trubchevskLevels, 
-                borderColor: '#9c27b0', 
-                borderWidth: 2, 
-                fill: true, 
-                tension: 0.3,
-                // === ВЫКОЛОТЫЕ ТОЧКИ ===
-                pointRadius: 5,
-                pointBorderColor: '#ffffff',
-                pointBorderWidth: 2,
-                pointBackgroundColor: '#9c27b0',
-                pointHoverRadius: 7,
-                order: 0
-            },
-            { 
-                label: '2022 год (373 см)', 
-                data: Array(dates.length).fill(373), 
-                borderColor: '#ff9800', 
-                borderDash: [5,5], 
-                fill: false, 
-                pointRadius: 0 
-            },
-            { 
-                label: '2013 год (418 см)', 
-                data: Array(dates.length).fill(418), 
-                borderColor: '#c62828', 
-                borderDash: [5,5], 
-                fill: false, 
-                pointRadius: 0 
-            }
-        ] },
-        options: { responsive: true, scales: { y: { title: { display: true, text: 'см' }, min: min, max: max } } }
-    });
-}
-    
-    // ========= ОБЩИЕ ФУНКЦИИ =========
-    function updateLudInfo() {
-        const current = ludData[ludData.length-1].level;
-        const discharge = estimateDischarge(current);
-        document.getElementById('currentLudLevel').innerText = current.toFixed(2);
-        document.getElementById('calcDischarge').innerHTML = `~${discharge}`;
-    }
     
     function getTrendInfo(levels, idx) {
         if (idx === 0) return { trend: "stable", arrow: "→", class: "trend-stable" };
@@ -793,7 +803,6 @@ function renderTrubchevskChart() {
         const currentBryansk = bryanskLevels[bryanskLevels.length-1];
         const currentPsur = psurLevels[psurLevels.length-1];
         const trendBryansk = getTrendInfo(bryanskLevels, bryanskLevels.length-1).trend;
-        const trendPsur = getTrendInfo(psurLevels, psurLevels.length-1).trend;
         
         const rate = growthRate;
         
@@ -822,7 +831,7 @@ function renderTrubchevskChart() {
         
         // Прогноз на 3 дня для Болвы
         const mainForecastList = document.getElementById('mainForecastList');
-        const days = ['07.04 (вт)', '08.04 (ср)', '09.04 (чт)'];
+        const days = ['09.04 (чт)', '10.04 (пт)', '11.04 (сб)'];
         mainForecastList.innerHTML = '';
         let forecastLevel = currentBryansk;
         for (let i = 0; i < days.length; i++) {
@@ -879,5 +888,3 @@ function renderTrubchevskChart() {
     
     refreshAll();
 </script>
-</body>
-</html>
