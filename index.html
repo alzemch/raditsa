@@ -194,7 +194,6 @@
             <div id="verdictBlock"></div>
             <div id="warningDetails" style="margin-top: 15px; padding: 12px; background: #fff; border-radius: 12px; font-size: 14px;"></div>
             
-            <!-- Прогнозы в одной строке: Псурь (слева) и Болва (справа) -->
             <div class="grid-2col" style="margin-top: 20px;">
                 <div style="padding: 15px; background: #e8eaf6; border-radius: 16px;">
                     <h4 style="color: #1e3a5f; margin-bottom: 12px;">📊 Прогноз по Псури (ранний индикатор):</h4>
@@ -297,17 +296,14 @@
         </div>
     </div>
 
-    <!-- КАРТА ГИДРОПОСТОВ -->
+    <!-- ЖИВАЯ SVG-СХЕМА (данные из массивов) -->
     <div class="card" style="margin-top: 24px;">
         <div class="card-header">
-            🗺️ Схема расположения гидропостов
-            <span class="small-note">→ на карте указаны все ключевые посты мониторинга</span>
+            🗺️ Схема гидропостов (данные обновляются автоматически)
+            <span class="small-note">→ уровни и стрелки берутся из таблицы</span>
         </div>
-        <div class="card-body" style="text-align: center;">
-            <img src="map_posts.jpg" alt="Схема гидропостов" style="max-width: 100%; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-            <div class="lag-info" style="margin-top: 12px;">
-                📍 Гидропосты: Голубея (Десна), Псурь (Болва), Брянск (Болва), Трубчевск (Десна), Дятьково (Десна)
-            </div>
+        <div class="card-body" id="svgContainer">
+            <!-- SVG будет вставлен сюда через JS -->
         </div>
     </div>
 
@@ -337,7 +333,7 @@
         <div class="card-header">📜 Исторические максимумы (для сравнения)</div>
         <div class="card-body history-table-container">
             <table class="data-table">
-                <thead><tr><th>Год</th><th>Псурь</th><th>Болва (Брянск)</th><th>Десна (Голубея)</th><th>Десна (Брянск)</th><th>Десна (Трубчевск)</th><th>Радица</th></tr></thead>
+                <thead><tr><th>Год</th><th>Псурь</th><th>Болва (Брянск)</th><th>Десна (Голубея)</th><th>Десна (Брянск)</th><th>Десна (Трубчевск)</th><th>Радица</th><tr></thead>
                 <tbody>
                     <tr><td class="danger-cell">2013</td><td class="danger-cell">418</td><td class="danger-cell">759</td><td class="danger-cell">414</td><td class="danger-cell">535</td><td class="danger-cell">418</td><td class="danger-cell">🔴 Рекордное затопление</td></tr>
                     <tr><td class="warning-cell">2022</td><td class="warning-cell">~360</td><td class="danger-cell">716</td><td class="warning-cell">331</td><td class="danger-cell">529</td><td class="warning-cell">373</td><td class="danger-cell">🔴 Сильное затопление</td></tr>
@@ -357,16 +353,16 @@
 
 <script>
     // ========= ОБНОВЛЁННЫЕ ДАННЫЕ (08.04) =========
-    let dates = ["26.03", "27.03", "28.03", "29.03", "30.03", "31.03", "01.04", "02.04", "03.04", "04.04", "05.04", "06.04", "07.04", "08.04", "09.04"];
-    let psurLevels = [320, 335, 345, 352, 358, 362, 360, 355, 351, 337, 319, 290, 246, 203, 167];
-    let bryanskLevels = [410, 435, 448, 455, 460, 462, 464, 465, 465, 481, 496, 501, 500, 497, 493];
-    let golubeyaLevels = [310, 325, 335, 342, 346, 348, 349, 350, 350, 352, 352, 352, 352, 351, 349];
-    let desnaBryanskLevels = [180, 220, 250, 270, 282, 287, 290, 294, 295, 304, 315, 321, 324, 323, 321];
-    let trubchevskLevels = [240, 260, 275, 288, 295, 298, 300, 300, 303, 305, 305, 306, 306, 308, 308];
+    let dates = ["26.03", "27.03", "28.03", "29.03", "30.03", "31.03", "01.04", "02.04", "03.04", "04.04", "05.04", "06.04", "07.04", "08.04"];
+    let psurLevels = [320, 335, 345, 352, 358, 362, 360, 355, 351, 337, 319, 290, 246, 203];
+    let bryanskLevels = [410, 435, 448, 455, 460, 462, 464, 465, 465, 481, 496, 501, 500, 497];
+    let golubeyaLevels = [310, 325, 335, 342, 346, 348, 349, 350, 350, 352, 352, 352, 352, 351];
+    let desnaBryanskLevels = [180, 220, 250, 270, 282, 287, 290, 294, 295, 304, 315, 321, 324, 323];
+    let trubchevskLevels = [240, 260, 275, 288, 295, 298, 300, 300, 303, 305, 305, 306, 306, 308];
     
     // Сброс Десногорской ГЭС
-    let gesDates = ["27.03", "28.03", "29.03", "30.03", "31.03", "01.04", "02.04", "03.04", "04.04", "05.04", "06.04", "07.04", "08.04", "09.04"];
-    let gesDischarge = [21.6, 35.0, 35.0, 35.0, 35.0, 35.0, 35.0, 35.0, 18.8, 18.5, 18.5, 18.6, 8.75, 7.6];
+    let gesDates = ["27.03", "28.03", "29.03", "30.03", "31.03", "01.04", "02.04", "03.04", "04.04", "05.04", "06.04", "07.04", "08.04"];
+    let gesDischarge = [21.6, 35.0, 35.0, 35.0, 35.0, 35.0, 35.0, 35.0, 18.8, 18.5, 18.5, 18.6, 8.75];
     
     // Людиново
     let ludData = [
@@ -375,8 +371,7 @@
         { date: "02.04", level: 180.10 },
         { date: "06.04", level: 180.37 },
         { date: "07.04", level: 180.47 },
-        { date: "08.04", level: 180.54 },
-        { date: "09.04", level: 180.62 }
+        { date: "08.04", level: 180.54 }
     ];
     
     const NPU_LUD = 181.0;
@@ -585,6 +580,143 @@
         }
     }
     
+    // Функция для создания живой SVG-схемы
+    function renderSVG() {
+        // Берём последние значения из массивов
+        const lastPsur = psurLevels[psurLevels.length-1];
+        const lastBryansk = bryanskLevels[bryanskLevels.length-1];
+        const lastGolubeya = golubeyaLevels[golubeyaLevels.length-1];
+        const lastDesnaBryansk = desnaBryanskLevels[desnaBryanskLevels.length-1];
+        const lastTrubchevsk = trubchevskLevels[trubchevskLevels.length-1];
+        const lastLudLevel = ludData[ludData.length-1].level;
+        const lastLudDischarge = estimateDischarge(lastLudLevel);
+        const lastGesDischarge = gesDischarge[gesDischarge.length-1];
+        
+        // Определяем стрелки (тренды)
+        const psurTrend = getTrendInfo(psurLevels, psurLevels.length-1).arrow;
+        const bryanskTrend = getTrendInfo(bryanskLevels, bryanskLevels.length-1).arrow;
+        const golubeyaTrend = getTrendInfo(golubeyaLevels, golubeyaLevels.length-1).arrow;
+        const desnaBryanskTrend = getTrendInfo(desnaBryanskLevels, desnaBryanskLevels.length-1).arrow;
+        const trubchevskTrend = getTrendInfo(trubchevskLevels, trubchevskLevels.length-1).arrow;
+        
+        // Определяем цвет для блока уровня (зелёный/красный/жёлтый)
+        const getLevelColor = (level, trend, threshold = null, isDesna = false) => {
+            // Сначала проверяем порог опасности
+            if (threshold && level >= threshold) return '#c62828';
+            if (isDesna && level >= DESNA_FLOOD_START && level < DESNA_DANGER) return '#ef6c00';
+            if (!isDesna && level >= 500 && level < 530) return '#ef6c00';
+            
+            // Затем цвет по тренду
+            if (trend === '↑') return '#c62828';
+            if (trend === '↓') return '#2e7d32';
+            return '#ff9800'; // Жёлтый для стабильного
+        };
+        
+        const svg = `
+        <svg viewBox="0 0 800 650" xmlns="http://www.w3.org/2000/svg" style="background: #f8f9fa; border-radius: 16px; font-family: 'Segoe UI', Arial, sans-serif; width: 100%; height: auto; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+          
+          <!-- Заголовок -->
+          <text x="400" y="30" text-anchor="middle" font-size="16" font-weight="bold" fill="#1e3a5f">🗺️ Схема гидропостов</text>
+          
+          <!-- ========= РЕКА ДЕСНА (синяя линия) ========= -->
+          <line x1="80" y1="80" x2="120" y2="110" stroke="#1e88e5" stroke-width="4" stroke-linecap="round"/>
+          <line x1="120" y1="110" x2="380" y2="300" stroke="#1e88e5" stroke-width="4" stroke-linecap="round"/>
+          <line x1="380" y1="300" x2="550" y2="300" stroke="#1e88e5" stroke-width="4" stroke-linecap="round"/>
+          <path d="M 550 300 Q 400 500 120 490" fill="none" stroke="#1e88e5" stroke-width="4" stroke-linecap="round"/>
+          
+          <!-- ========= ГЭС ДЕСНОГОРСК ========= -->
+          <rect x="30" y="55" width="50" height="50" rx="8" fill="#e3f2fd" stroke="#1565c0" stroke-width="2.5"/>
+          <text x="55" y="72" text-anchor="middle" font-size="9" font-weight="bold" fill="#1565c0">ГЭС</text>
+          <text x="55" y="84" text-anchor="middle" font-size="8" font-weight="bold" fill="#1565c0">Дес-</text>
+          <text x="55" y="96" text-anchor="middle" font-size="8" font-weight="bold" fill="#1565c0">ногорск</text>
+          <text x="55" y="115" text-anchor="middle" font-size="9" fill="#1565c0">⚡ ${lastGesDischarge} м³/с</text>
+          
+          <!-- ========= ГИДРОПОСТЫ НА ДЕСНЕ ========= -->
+          <!-- Голубея -->
+          <circle cx="120" cy="110" r="8" fill="white" stroke="#1e88e5" stroke-width="3"/>
+          <text x="120" y="148" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e88e5">Голубея</text>
+          <rect x="85" y="156" width="70" height="20" rx="10" fill="#e8f5e9" stroke="${getLevelColor(lastGolubeya, golubeyaTrend)}" stroke-width="2"/>
+          <text x="120" y="171" text-anchor="middle" font-size="11" font-weight="bold" fill="${getLevelColor(lastGolubeya, golubeyaTrend)}">${lastGolubeya} см ${golubeyaTrend}</text>
+          
+          <!-- Десна (Брянск) -->
+          <circle cx="550" cy="300" r="8" fill="white" stroke="#1e88e5" stroke-width="3"/>
+          <text x="550" y="260" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e88e5">Десна (Брянск)</text>
+          <rect x="505" y="268" width="90" height="20" rx="10" fill="#fff8e1" stroke="${getLevelColor(lastDesnaBryansk, desnaBryanskTrend, DESNA_DANGER, true)}" stroke-width="2"/>
+          <text x="550" y="283" text-anchor="middle" font-size="11" font-weight="bold" fill="${getLevelColor(lastDesnaBryansk, desnaBryanskTrend, DESNA_DANGER, true)}">${lastDesnaBryansk} см ${desnaBryanskTrend}</text>
+          
+          <!-- Трубчевск -->
+          <circle cx="120" cy="490" r="8" fill="white" stroke="#1e88e5" stroke-width="3"/>
+          <text x="120" y="470" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e88e5">Трубчевск</text>
+          <rect x="85" y="505" width="70" height="20" rx="10" fill="#ffebee" stroke="${getLevelColor(lastTrubchevsk, trubchevskTrend, DESNA_DANGER, true)}" stroke-width="2"/>
+          <text x="120" y="520" text-anchor="middle" font-size="11" font-weight="bold" fill="${getLevelColor(lastTrubchevsk, trubchevskTrend, DESNA_DANGER, true)}">${lastTrubchevsk} см ${trubchevskTrend}</text>
+          
+          <!-- ========= ТОЧКА СЛИЯНИЯ ========= -->
+          <circle cx="400" cy="300" r="12" fill="white" stroke="#9c27b0" stroke-width="3" stroke-dasharray="4,3"/>
+          <text x="400" y="320" text-anchor="middle" font-size="10" fill="#9c27b0" font-weight="bold">Слияние</text>
+          
+          <!-- ========= РЕКА БОЛВА (красная линия) ========= -->
+          <line x1="400" y1="90" x2="400" y2="300" stroke="#e53935" stroke-width="4" stroke-linecap="round"/>
+          <line x1="550" y1="90" x2="400" y2="90" stroke="#e53935" stroke-width="4" stroke-linecap="round"/>
+          
+          <!-- ========= ГИДРОПОСТЫ НА БОЛВЕ ========= -->
+          <!-- Людиново -->
+          <rect x="480" y="60" width="140" height="60" rx="8" fill="#ffccbc" stroke="#e53935" stroke-width="2"/>
+          <text x="550" y="82" text-anchor="middle" font-size="12" font-weight="bold" fill="#bf360c">Людиново</text>
+          <text x="550" y="98" text-anchor="middle" font-size="11" fill="#bf360c">${lastLudLevel.toFixed(2)} м ↑</text>
+          <text x="550" y="112" text-anchor="middle" font-size="10" fill="#bf360c">~${lastLudDischarge} м³/с</text>
+          
+          <!-- Время добегания от Людиново до Псури -->
+          <text x="460" y="105" text-anchor="middle" font-size="10" fill="#e53935">~24 ч</text>
+          
+          <!-- Псурь -->
+          <circle cx="400" cy="160" r="8" fill="white" stroke="#e53935" stroke-width="3"/>
+          <text x="425" y="155" text-anchor="start" font-size="13" font-weight="bold" fill="#e53935">Псурь</text>
+          <rect x="420" y="162" width="70" height="20" rx="10" fill="#e8f5e9" stroke="${getLevelColor(lastPsur, psurTrend)}" stroke-width="2"/>
+          <text x="455" y="177" text-anchor="middle" font-size="11" font-weight="bold" fill="${getLevelColor(lastPsur, psurTrend)}">${lastPsur} см ${psurTrend}</text>
+          
+          <!-- Радица-Крыловка -->
+          <rect x="340" y="210" width="120" height="36" rx="12" fill="#fff3e0" stroke="#ef6c00" stroke-width="2"/>
+          <text x="400" y="228" text-anchor="middle" font-size="10" font-weight="bold" fill="#e65100">🏠 Радица-</text>
+          <text x="400" y="241" text-anchor="middle" font-size="10" font-weight="bold" fill="#e65100">Крыловка</text>
+          
+          <!-- Время от Псури до Радицы -->
+          <text x="420" y="195" font-size="10" fill="#e53935">~6 ч</text>
+          
+          <!-- Болва (Брянск) -->
+          <circle cx="400" cy="275" r="8" fill="white" stroke="#e53935" stroke-width="3"/>
+          <text x="400" y="340" text-anchor="middle" font-size="13" font-weight="bold" fill="#e53935">Болва (Брянск)</text>
+          <rect x="360" y="348" width="80" height="20" rx="10" fill="#e8f5e9" stroke="${getLevelColor(lastBryansk, bryanskTrend, 530)}" stroke-width="2"/>
+          <text x="400" y="363" text-anchor="middle" font-size="11" font-weight="bold" fill="${getLevelColor(lastBryansk, bryanskTrend, 530)}">${lastBryansk} см ${bryanskTrend}</text>
+          
+          <!-- ========= ЛЕГЕНДА ========= -->
+          <rect x="30" y="550" width="740" height="85" rx="10" fill="white" stroke="#ddd" stroke-width="1"/>
+          <text x="50" y="575" font-size="12" font-weight="bold" fill="#1e3a5f">Легенда:</text>
+          <line x1="110" y1="572" x2="140" y2="572" stroke="#1e88e5" stroke-width="4"/>
+          <text x="145" y="577" font-size="11" fill="#1e88e5">Десна</text>
+          <line x1="210" y1="572" x2="240" y2="572" stroke="#e53935" stroke-width="4"/>
+          <text x="245" y="577" font-size="11" fill="#e53935">Болва</text>
+          <circle cx="320" cy="572" r="5" fill="white" stroke="#333" stroke-width="2"/>
+          <text x="335" y="577" font-size="11" fill="#333">Гидропост</text>
+          <rect x="430" y="565" width="12" height="12" rx="3" fill="#fff3e0" stroke="#ef6c00" stroke-width="1.5"/>
+          <text x="450" y="577" font-size="11" fill="#333">Посёлок</text>
+          <text x="550" y="577" font-size="11" fill="#9c27b0">Слияние рек</text>
+          
+          <!-- Индикаторы уровней -->
+          <rect x="30" y="605" width="740" height="30" rx="5" fill="white" stroke="#eee" stroke-width="1"/>
+          <rect x="50" y="611" width="16" height="14" rx="3" fill="#e3f2fd" stroke="#1565c0" stroke-width="1.5"/>
+          <text x="72" y="623" font-size="10" fill="#1565c0">ГЭС</text>
+          <rect x="120" y="611" width="16" height="14" rx="7" fill="#e8f5e9" stroke="#4caf50" stroke-width="1.5"/>
+          <text x="142" y="623" font-size="10" fill="#2e7d32">Спад уровня</text>
+          <rect x="230" y="611" width="16" height="14" rx="7" fill="#ffebee" stroke="#f44336" stroke-width="1.5"/>
+          <text x="252" y="623" font-size="10" fill="#c62828">Рост уровня</text>
+          <rect x="340" y="611" width="16" height="14" rx="7" fill="#fff8e1" stroke="#ff9800" stroke-width="1.5"/>
+          <text x="362" y="623" font-size="10" fill="#e65100">Стабильный</text>
+        </svg>
+        `;
+        
+        document.getElementById('svgContainer').innerHTML = svg;
+    }
+    
     function updateVerdictAndHistory() {
         const currentBryansk = bryanskLevels[bryanskLevels.length-1];
         const currentPsur = psurLevels[psurLevels.length-1];
@@ -655,6 +787,9 @@
         document.getElementById('currentDesnaBryansk').innerText = desnaBryanskLevels[desnaBryanskLevels.length-1];
         document.getElementById('currentTrubchevsk').innerText = trubchevskLevels[trubchevskLevels.length-1];
         document.getElementById('currentDateBadge').innerHTML = `📅 Данные: ${dates[dates.length-1]}`;
+        
+        // Обновляем SVG после изменения данных
+        renderSVG();
     }
     
     function refreshAll() {
