@@ -421,7 +421,7 @@
         charts.ludLevel = new Chart(ctx, {
             type: 'line',
             data: { labels: ludLabels, datasets: [
-                { label: 'Уровень Неполади (м)', data: ludLevels, borderColor: '#1e88e5', backgroundColor: 'rgba(30,136,229,0.1)', borderWidth: 3, fill: true, tension: 0.2, pointRadius: 6, pointBorderColor: '#ffffff', pointBorderWidth: 2.5, pointBackgroundColor: '#1e88e5', pointHoverRadius: 8, order: 0 },
+                { label: 'Уровень Неполади (м)', data: ludLevels, borderColor: '#1e88e5', backgroundColor: 'rgba(30,136,229,0.1)', borderWidth: 3, fill: true, tension: 0.3, pointRadius: 6, pointBorderColor: '#ffffff', pointBorderWidth: 2.5, pointBackgroundColor: '#1e88e5', pointHoverRadius: 8, order: 0 },
                 { label: 'НПУ (181,0 м)', data: Array(ludLabels.length).fill(NPU_LUD), borderColor: '#c62828', borderWidth: 2, borderDash: [8,6], fill: false, pointRadius: 0 }
             ] },
             options: { responsive: true, maintainAspectRatio: true, scales: { y: { title: { display: true, text: 'Уровень (м)' }, min: min, max: max } } }
@@ -434,7 +434,7 @@
         const { min, max } = getAutoMinMax(ludDischarge, 10);
         charts.ludDischarge = new Chart(ctx, {
             type: 'line',
-            data: { labels: ludLabels, datasets: [{ label: 'Расчётный сброс (м³/с)', data: ludDischarge, borderColor: '#ef6c00', backgroundColor: 'rgba(239,108,0,0.1)', borderWidth: 3, fill: true, tension: 0.2, pointRadius: 6, pointBorderColor: '#ffffff', pointBorderWidth: 2.5, pointBackgroundColor: '#ef6c00', pointHoverRadius: 8, order: 0 }] },
+            data: { labels: ludLabels, datasets: [{ label: 'Расчётный сброс (м³/с)', data: ludDischarge, borderColor: '#ef6c00', backgroundColor: 'rgba(239,108,0,0.1)', borderWidth: 3, fill: true, tension: 0.3, pointRadius: 6, pointBorderColor: '#ffffff', pointBorderWidth: 2.5, pointBackgroundColor: '#ef6c00', pointHoverRadius: 8, order: 0 }] },
             options: { responsive: true, maintainAspectRatio: true, scales: { y: { title: { display: true, text: 'м³/с' }, min: min, max: max } } }
         });
     }
@@ -445,7 +445,7 @@
         const { min, max } = getAutoMinMax(gesDischarge, 10);
         charts.gesDischarge = new Chart(ctx, {
             type: 'line',
-            data: { labels: gesDates, datasets: [{ label: 'Сброс Десногорской ГЭС (м³/с)', data: gesDischarge, borderColor: '#1e88e5', backgroundColor: 'rgba(30,136,229,0.1)', borderWidth: 3, fill: true, tension: 0.2, pointRadius: 6, pointBorderColor: '#ffffff', pointBorderWidth: 2.5, pointBackgroundColor: '#1e88e5', pointHoverRadius: 8, order: 0 }] },
+            data: { labels: gesDates, datasets: [{ label: 'Сброс Десногорской ГЭС (м³/с)', data: gesDischarge, borderColor: '#1e88e5', backgroundColor: 'rgba(30,136,229,0.1)', borderWidth: 3, fill: true, tension: 0.3, pointRadius: 6, pointBorderColor: '#ffffff', pointBorderWidth: 2.5, pointBackgroundColor: '#1e88e5', pointHoverRadius: 8, order: 0 }] },
             options: { responsive: true, maintainAspectRatio: true, scales: { y: { title: { display: true, text: 'м³/с' }, min: min, max: max } } }
         });
     }
