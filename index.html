@@ -336,19 +336,19 @@
         <div class="card-header">📜 Исторические максимумы (для сравнения)</div>
         <div class="card-body history-table-container">
             <table class="data-table">
-                <thead><tr><th>Год</th><th>Псурь</th><th>Болва (Брянск)</th><th>Десна (Голубея)</th><th>Десна (Брянск)</th><th>Десна (Трубчевск)</th><th>Радица</th></tr></thead>
+                <thead><tr><th>Год</th><th>Псурь</th><th>Болва (Брянск)</th><th>Десна (Голубея)</th><th>Десна (Брянск)</th><th>Десна (Трубчевск)</th><th>Радица</th></td></thead>
                 <tbody>
                     <tr><td class="danger-cell">2013</td><td class="danger-cell">418</td><td class="danger-cell">759</td><td class="danger-cell">414</td><td class="danger-cell">535</td><td class="danger-cell">418</td><td class="danger-cell">🔴 Рекордное затопление</td></tr>
                     <tr><td class="warning-cell">2022</td><td class="warning-cell">~360</td><td class="danger-cell">716</td><td class="warning-cell">331</td><td class="danger-cell">529</td><td class="warning-cell">373</td><td class="danger-cell">🔴 Сильное затопление</td></tr>
-                    <tr id="currentHistoryRow"><td>2026</td><td id="currentPsur">140</td><td id="currentBolva">489</td><td id="currentGolubeya">347</td><td id="currentDesnaBryansk">316</td><td id="currentTrubchevsk">309</td><td id="currentStatus">🟢 Безопасно</td></tr>
+                    <tr id="currentHistoryRow"><td>2026</td><td id="currentPsur">132</td><td id="currentBolva">428</td><td id="currentGolubeya">277</td><td id="currentDesnaBryansk">272</td><td id="currentTrubchevsk">310</td><td id="currentStatus">🟢 Безопасно</td></tr>
                 </tbody>
             </table>
         </div>
     </div>
 
     <div class="footer">
-        <p>📌 <strong>Главный маркер:</strong> Болва в Брянске (489 см, спад -4 см/сутки). Уровень снижается, угроза подтопления миновала.</p>
-        <p>📌 <strong>Псурь резко упала</strong> (167 → 140 см) — новая вода сверху не идёт.</p>
+        <p>📌 <strong>Главный маркер:</strong> Болва в Брянске (428 см, спад -23 см/сутки). Уровень снижается, угроза подтопления миновала.</p>
+        <p>📌 <strong>Псурь</strong> (132 см) — новая вода сверху не идёт.</p>
         <p>📌 <strong>Людиново:</strong> уровень 180,69 м, расчётный сброс ~32 м³/с.</p>
         <p>📌 <strong>Как обновить данные:</strong> отредактируйте массивы в коде (в самом начале script).</p>
     </div>
@@ -362,10 +362,10 @@
     let bryanskLevels = [410, 435, 448, 455, 460, 462, 464, 465, 465, 481, 496, 501, 500, 497, 493, 489, 483, 451, 428];
     let golubeyaLevels = [310, 325, 335, 342, 346, 348, 349, 350, 350, 352, 352, 352, 352, 351, 349, 347, 343, 321, 277];
     let desnaBryanskLevels = [180, 220, 250, 270, 282, 287, 290, 294, 295, 304, 315, 321, 324, 323, 321, 316, 311, 292, 272];
-    let trubchevskLevels = [240, 260, 275, 288, 295, 298, 300, 300, 303, 305, 305, 306, 306, 308, 308, 309, 307, 310, ];
+    let trubchevskLevels = [240, 260, 275, 288, 295, 298, 300, 300, 303, 305, 305, 306, 306, 308, 308, 309, 307, 310, 310];
     
     // Сброс Десногорской ГЭС
-    let gesDates = ["27.03", "28.03", "29.03", "30.03", "31.03", "01.04", "02.04", "03.04", "04.04", "05.04", "06.04", "07.04", "08.04", "09.04", "10.04", "11.04", "13.04", 15.04];
+    let gesDates = ["27.03", "28.03", "29.03", "30.03", "31.03", "01.04", "02.04", "03.04", "04.04", "05.04", "06.04", "07.04", "08.04", "09.04", "10.04", "11.04", "13.04", "15.04"];
     let gesDischarge = [21.6, 35.0, 35.0, 35.0, 35.0, 35.0, 35.0, 35.0, 18.8, 18.5, 18.5, 18.6, 8.75, 7.6, 2.0, 2.0, 2.0, 2.0];
     
     // Людиново
@@ -380,7 +380,8 @@
         { date: "10.04", level: 180.69 },
         { date: "11.04", level: 180.74 },
         { date: "13.04", level: 180.71 },
-        { date: "15.04", level: 180.69 }];
+        { date: "15.04", level: 180.69 }
+    ];
    
     const NPU_LUD = 181.0;
     const DESNA_FLOOD_START = 340;
@@ -774,9 +775,9 @@
         document.getElementById('verdictBlock').innerHTML = `<div class="verdict ${verdictClass}">${verdictText}</div>`;
         document.getElementById('warningDetails').innerHTML = `<div style="background:#fff3e0; padding:12px; border-radius:12px;">${details}</div>`;
         
-        // Прогноз на 3 дня для Болвы
+        // Прогноз на 3 дня для Болвы (динамический, на основе последних 2 дней)
         const mainForecastList = document.getElementById('mainForecastList');
-        const days = ['11.04 (сб)', '12.04 (вс)', '13.04 (пн)'];
+        const days = ['16.04 (чт)', '17.04 (пт)', '18.04 (сб)'];
         mainForecastList.innerHTML = '';
         let forecastLevel = currentBryansk;
         for (let i = 0; i < days.length; i++) {
@@ -790,14 +791,16 @@
         // Информация о темпе роста
         document.getElementById('trendInfo').innerHTML = `💡 Темп роста Болвы: <span class="rate-badge ${rateClass}">${rate > 0 ? '+' : ''}${rate} см/сутки (${rateText})</span>`;
         
-        // Прогноз по Псури
+        // Прогноз по Псури (динамический)
         const psurForecastList = document.getElementById('psurForecastList');
         psurForecastList.innerHTML = '';
         let psurForecast = currentPsur;
         const psurTrend = getTrendInfo(psurLevels, psurLevels.length-1).trend;
+        const psurRate = psurLevels[psurLevels.length-1] - psurLevels[psurLevels.length-2];
         for (let i = 0; i < days.length; i++) {
-            if (psurTrend === 'fall') psurForecast -= 4;
-            else if (psurTrend === 'rise') psurForecast += 2;
+            if (psurTrend === 'fall') psurForecast += psurRate; // используем реальный темп
+            else if (psurTrend === 'rise') psurForecast += psurRate;
+            // если стабилен — не меняем
             let color = psurForecast >= 400 ? '#c62828' : (psurForecast >= 350 ? '#ef6c00' : '#2e7d32');
             let symbol = psurTrend === 'fall' ? '▼' : (psurTrend === 'rise' ? '▲' : '➡');
             psurForecastList.innerHTML += `<li class="forecast-item"><span class="forecast-date">${days[i]}</span><span style="color:${color}; font-weight:bold">${symbol} ${Math.round(psurForecast)} см</span></li>`;
